@@ -37,20 +37,31 @@ jobs:
 
       # (a) Todos los scripts deben compilar. Sin `pip install`: el toolkit
       #     es Python stdlib y no puede depender de nada externo.
+      #
+      #     OJO: el `find` va DIRECTO al `xargs -0`. Con una función que
+      #     envolviera al `find` sin reenviar sus argumentos (`"$@"`), el
+      #     `-print0` se perdía, `xargs -0` recibía un único argumento con
+      #     saltos de línea dentro y `py_compile` fallaba con «No such file or
+      #     directory» mostrando la lista entera de ficheros.
       - name: Compilar todos los scripts (py_compile)
         run: |
           set -euo pipefail
-          find_scripts() {
-            find . \
-              -name '*.py' \
-              -not -path '*/.venv/*' \
-              -not -path '*/03-casos/*' \
-              -not -path '*/__pycache__/*' \
-              -not -path '*/node_modules/*'
-          }
-          count=$(find_scripts | wc -l)
+          count=$(find . \
+            -name '*.py' \
+            -not -path '*/.venv/*' \
+            -not -path '*/03-casos/*' \
+            -not -path '*/__pycache__/*' \
+            -not -path '*/node_modules/*' \
+            | wc -l)
           echo "Compilando ${count} script(s)"
-          find_scripts -print0 | xargs -0 python3 -m py_compile
+          find . \
+            -name '*.py' \
+            -not -path '*/.venv/*' \
+            -not -path '*/03-casos/*' \
+            -not -path '*/__pycache__/*' \
+            -not -path '*/node_modules/*' \
+            -print0 \
+            | xargs -0 python3 -m py_compile
           echo "OK: ${count} script(s) compilan."
 
       # (b) Auto-prueba del toolkit. 14 checks y NINGUNA llamada de red:
@@ -109,10 +120,18 @@ jobs:
       # licencia (GITLEAKS_LICENSE sólo es obligatorio para organizaciones).
       # La configuración del repo (.gitleaks.toml) se detecta sola; además se
       # pasa explícitamente por GITLEAKS_CONFIG.
+      #
+      # GITLEAKS_VERSION está FIJADA a propósito: gitleaks-action@v3 trae una
+      # versión por defecto embebida (8.24.3) que es ANTERIOR al formato
+      # `[[allowlists]]` del fichero de configuración. Con esa versión, el
+      # allowlist se ignora en silencio y la CI falla con los 8 secretos
+      # SINTÉTICOS del repo (los fixtures y el ejercicio de formación).
+      # `[[allowlists]]` necesita gitleaks >= 8.25.0.
       - name: Buscar secretos con gitleaks
         uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_VERSION: 8.30.1
           GITLEAKS_CONFIG: .gitleaks.toml
           GITLEAKS_ENABLE_UPLOAD_ARTIFACT: true
           GITLEAKS_ENABLE_SUMMARY: true

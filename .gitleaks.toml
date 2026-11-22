@@ -12,6 +12,13 @@
 #  ruta, los secretos SINTÉTICOS conocidos. Cualquier otro secreto —en
 #  cualquier otra ruta, con cualquier otro valor— hace fallar la CI.
 #
+#  REQUISITO DE VERSIÓN: gitleaks >= 8.25.0. El formato `[[allowlists]]`
+#  (array de allowlists, con la semántica "ruta Y valor") no existe en
+#  versiones anteriores: en ellas este bloque se ignora EN SILENCIO y la CI
+#  falla reportando los secretos sintéticos del propio repo. La CI fija la
+#  versión con GITLEAKS_VERSION=8.30.1; si se sube o se baja, hay que subir o
+#  bajar aquí el requisito.
+#
 #  Referencia: https://github.com/gitleaks/gitleaks#configuration
 # ===========================================================================
 
