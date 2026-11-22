@@ -129,13 +129,14 @@ token-gen: ## Genera un token aleatorio para CONSOLE_TOKEN
 ## Construcción de la consola
 ## ---------------------------------------------------------------------------
 build-console: ## Construye la imagen de la consola desde console/
-	@if [ -f "$(CURDIR)/../console/Dockerfile" ]; then \
-	  docker build -t "$${CONSOLE_IMAGE:-web-audit-playbook/console:local}" "$(CURDIR)/../console" \
+	@if [ -f "$(REPO_DIR)/console/Dockerfile" ]; then \
+	  docker build -t "$${CONSOLE_IMAGE:-web-audit-playbook/console:local}" \
+	    -f "$(REPO_DIR)/console/Dockerfile" "$(REPO_DIR)" \
 	    && echo "Construida.  make up"; \
 	else \
 	  echo "AVISO: no existe console/Dockerfile."; \
 	  echo "       La consola se despliega con una imagen ya construida:"; \
-	  echo "         docker build -t web-audit-playbook/console:local console/"; \
+	  echo "         docker build -t web-audit-playbook/console:local -f console/Dockerfile ."; \
 	  echo "       y se pone CONSOLE_IMAGE=web-audit-playbook/console:local en .env"; \
 	fi
 

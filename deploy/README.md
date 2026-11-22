@@ -201,17 +201,75 @@ Abre `http://127.0.0.1:8787` por el túnel.
 
 ### 3.4 Construir la imagen de la consola
 
-La consola vive en `console/` dentro del repo. El `docker-compose.yml` la
-construye con el bloque `build:`. Si todavía no hay `console/Dockerfile`:
+La consola se empaqueta con [`console/Dockerfile`](../console/Dockerfile). El
+`docker-compose.yml` la construye con el bloque `build:`; el comando exacto es:
 
 ```bash
-docker build -t web-audit-playbook/console:local console/
-# y en .env:
-#   CONSOLE_IMAGE=web-audit-playbook/console:local
+# Desde la RAÍZ del repositorio
+docker build -t web-audit-playbook/console:local -f console/Dockerfile .
 ```
 
-O, equivalente, `make build-console` (avisa y te dice qué hacer si el
-Dockerfile todavía no existe).
+O, equivalente, `make build-console` (desde `deploy/`).
+
+> **El contexto de build es la RAÍZ del repositorio, no `console/`.** La
+> imagen necesita **dos** piezas del repo: `console/` (la interfaz y el
+> servidor) y `01-tooling/scripts/` (el toolchain que la consola invoca para
+> calcular el score y para generar la demo). Por eso el comando lleva `-f
+> console/Dockerfile` y el contexto es `.`.
+>
+> **Y por eso el `.dockerignore` de la raíz es una lista blanca**: excluye
+> todo y re-incluye sólo `console/` y `01-tooling/scripts/`. La consecuencia
+> que importa: `03-casos/` —la evidencia de los clientes reales— **nunca
+> entra en el contexto de build**, ni siquiera cuando la imagen se construye
+> en el portátil del auditor, donde esa carpeta sí existe.
+
+Qué lleva la imagen:
+
+| Pieza | Detalle |
+|---|---|
+| Base | `python:3.13-slim`. Sin `pip install`: la consola es stdlib puro. |
+| Layout | `/app/console/` y `/app/01-tooling/scripts/`. |
+| Usuario | `console` (uid 10001). Sin root y sin shell. |
+| Puerto | `8787`. |
+| Salud | `HEALTHCHECK` con la stdlib: `python3 -c "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8787/api/summary')"`. La imagen no instala `curl` ni `wget` (una slim no los trae), y la sonda no añade superficie. |
+| Comando | `python3 console/server.py --evidence /data/evidencia --host 0.0.0.0 --port 8787 --no-open`. **Nunca en modo demo.** |
+
+> **El `command:` del compose sobrescribe el del `Dockerfile`.** En el stack la
+> consola lee `/evidencia` (donde monta el volumen); en un `docker run`
+> suelto lee `/data/evidencia`, que es el punto de montaje del ejemplo de
+> [`console/README.md` §Docker](../console/README.md#docker). Es el mismo
+> parámetro con dos rutas, porque las dos están en solo lectura.
+
+### 3.5 Regenerar la demo dentro del contenedor
+
+El conjunto de demostración **no va en la imagen**: se genera en tiempo de
+ejecución con el propio toolchain, que es la copia del repo dentro del
+contenedor.
+
+```bash
+# Genera la demo sintética (~45 s: la sonda respeta el intervalo de 1 s).
+# --no-deps: la demo no necesita el runtime de LLM, así que no se arranca
+# ollama para generarla.
+docker compose run --rm --no-deps console python3 console/demo/generar_demo.py
+
+# Y ábrela en modo demo, por el túnel SSH como cualquier otra consola
+docker compose run --rm --no-deps -p 127.0.0.1:8787:8787 console \
+  python3 console/server.py --demo --host 0.0.0.0 --port 8787 --no-open
+```
+
+Lo que se escribe se queda **dentro del contenedor**, que es desechable. Para
+conservarlo, monta un volumen:
+
+```bash
+docker compose run --rm --no-deps \
+  -v "$PWD/demo:/app/console/demo/evidencia" \
+  console python3 console/demo/generar_demo.py
+```
+
+> **La demo es sintética.** La genera el toolchain contra los fixtures del
+> repo y un sitio efímero en `127.0.0.1`. Ningún dato de cliente entra en
+> ella, y el corpus crudo queda marcado **SIN REDACTAR** a propósito, para
+> que se vea la regla de redacción en acción.
 
 ---
 

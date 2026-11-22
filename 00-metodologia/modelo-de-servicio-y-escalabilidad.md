@@ -1103,7 +1103,7 @@ cliente paga.
 ### 6.b Palanca 2 — Toolchain propia
 
 El repo ya tiene **siete scripts propios**, en Python 3.13 de biblioteca
-estándar, sin dependencias, con auto-prueba de 14 checks sin llamadas de red
+estándar, sin dependencias, con auto-prueba de 19 checks sin llamadas de red
 (`python3 tests/selftest.py`). Es la ventaja estructural frente a un consultor
 que depende de un escáner de pago: **el coste marginal de la Fase 0 es
 prácticamente cero en licencias**.

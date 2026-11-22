@@ -125,12 +125,18 @@ services:
   # -------------------------------------------------------------------------
   console:
     image: ${CONSOLE_IMAGE:-web-audit-playbook/console:local}
-    # La consola es la app del repo (`console/`). Se construye desde ahí.
-    # Si `console/Dockerfile` no existe todavía, construye la imagen a mano
-    # (ver deploy/README.md §3.1) y quita este bloque `build:`.
+    # La consola es la app del repo (`console/`) y se construye desde
+    # `console/Dockerfile`.
+    #
+    # OJO — el CONTEXTO es la RAÍZ del repositorio, no `console/`: la imagen
+    # necesita DOS piezas del repo (`console/` y `01-tooling/scripts/`, que es
+    # el toolchain que la consola invoca para el score y para la demo). El
+    # `.dockerignore` de la raíz es una lista blanca: al daemon de Docker sólo
+    # viajan esas rutas, así que `03-casos/` (evidencia de clientes reales)
+    # NUNCA entra en el contexto de build.
     build:
-      context: ${CONSOLE_CONTEXT:-../console}
-      dockerfile: Dockerfile
+      context: ${CONSOLE_CONTEXT:-..}
+      dockerfile: console/Dockerfile
     container_name: wap-console
     restart: unless-stopped
     depends_on:
@@ -138,7 +144,7 @@ services:
         condition: service_healthy
     command:
       - python3
-      - server.py
+      - console/server.py
       - --evidence
       - /evidencia
       - --port
@@ -179,7 +185,9 @@ services:
     networks:
       - wap_net
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8787/api/health >/dev/null 2>&1 || exit 1"]
+      # La imagen es `python:3.13-slim`: no trae `curl` ni `wget`. La sonda
+      # usa la propia stdlib de Python, que ya está en la imagen.
+      test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8787/api/summary')"]
       interval: 30s
       timeout: 5s
       retries: 3

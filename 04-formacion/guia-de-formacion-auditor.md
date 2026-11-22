@@ -55,7 +55,7 @@ trabajo va a ser correcto o un incidente.
 |:-:|---|---|
 | 1 | **Energía y tiempo para 3–5 días** de trabajo concentrado por auditoría | El playbook no se ejecuta «un rato». La Fase 0 son 10–18 h y la Fase 1, 20–35 h de carga estimadas (orientativas) |
 | 2 | **Un laboratorio propio** | Toda la práctica se hace contra [`01-lab-seguro.md`](01-lab-seguro.md). Practicar contra un sitio ajeno es un delito, no una práctica |
-| 3 | **Python 3.13** y la toolchain del playbook ejecutándose | `python3 tests/selftest.py` debe dar 14/14 antes de la primera petición real |
+| 3 | **Python 3.13** y la toolchain del playbook ejecutándose | `python3 tests/selftest.py` debe dar 19/19 antes de la primera petición real |
 | 4 | **Una carpeta de trabajo cifrada** para la evidencia cruda | La evidencia cruda puede contener datos de pacientes. Sale de tu disco redactada o no sale |
 | 5 | **Un seguro de responsabilidad civil profesional** | Ver [`../00-metodologia/modelo-de-servicio-y-escalabilidad.md`](../00-metodologia/modelo-de-servicio-y-escalabilidad.md) §4.c. No es un requisito legal comprobado aquí: es un **requisito de credibilidad** ante un cliente de salud |
 | 6 | **Un mentor disponible** | El plan de la §7 presupone que hay alguien que revise tu trabajo antes de que salga del escritorio |
@@ -245,7 +245,7 @@ cd 01-tooling/scripts
 python3 tests/selftest.py
 ```
 
-Debe dar **14/14 checks PASS**. El check que importa no es que pasen: es el
+Debe dar **19/19 checks PASS**. El check que importa no es que pasen: es el
 que **bloquea `socket`** para comprobar que los scripts locales no abren
 conexiones. Un toolkit que abre sockets sin que tú lo sepas es un problema de
 alcance, no una comodidad.
@@ -1380,7 +1380,7 @@ demuestra, o no puedes firmarlo. Se relee también al final de cada auditoría.
 | 3 | **Tengo claro el ritmo**: ≥ 1 s entre peticiones, `GET`/`HEAD` solamente, UA honesto y contactable, cargas pesadas fuera de horario comercial | Lo tienes escrito en tus notas, no sólo en la memoria | ☐ |
 | 4 | **Sé qué hago cuando el cliente pide algo que el RoE prohíbe** — y sé que la respuesta es «no, esto no, y esto sí» | Tienes escrita la respuesta (ejercicio E5) | ☐ |
 | 5 | **Sé documentar una negativa con los cuatro campos**: qué se pidió, por qué no, qué ofrezco, quién decide | Tienes la plantilla rellenada de un caso de ejemplo | ☐ |
-| 6 | **La toolchain pasa el selftest** | `python3 tests/selftest.py` → **14/14 checks PASS**, y el check de sockets incluido | ☐ |
+| 6 | **La toolchain pasa el selftest** | `python3 tests/selftest.py` → **19/19 checks PASS**, y el check de sockets incluido | ☐ |
 | 7 | **Sé que el guard recorta los métodos a `GET`/`HEAD` aunque la autorización diga otra cosa**, y que `max_bytes` limita la lectura | Puedes explicar qué hace el guard con un `authorization.json` que liste `POST` | ☐ |
 | 8 | **Entiendo el ciclo de las 11 fases** y sé en qué fase estoy en cada momento | Sabes numerarlas de memoria y decir qué evidencia produce cada una | ☐ |
 | 9 | **Sé lo que es un soft-404 y cómo se detecta** — y sé que la severidad del TSV es *a priori* | Puedes explicar por qué `verdict=soft_404` no es un hallazgo (ejercicio E2) | ☐ |
@@ -1413,7 +1413,7 @@ demuestra, o no puedes firmarlo. Se relee también al final de cada auditoría.
 
 - [`../01-tooling/scripts/README.md`](../01-tooling/scripts/README.md) — los 7 scripts, el flujo de autorización, las limitaciones conocidas
 - [`../01-tooling/scripts/authorization.example.json`](../01-tooling/scripts/authorization.example.json) — la plantilla de autorización firmada
-- [`../01-tooling/scripts/tests/selftest.py`](../01-tooling/scripts/tests/selftest.py) — el selftest de 14 checks
+- [`../01-tooling/scripts/tests/selftest.py`](../01-tooling/scripts/tests/selftest.py) — el selftest de 19 checks
 - [`../01-tooling/manifiesto-de-herramientas.md`](../01-tooling/manifiesto-de-herramientas.md) — el catálogo de herramientas de terceros con licencias y modo
 
 **Formatos de trabajo:**

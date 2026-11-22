@@ -58,7 +58,7 @@ python3 01-tooling/scripts/tests/check_links.py
 ## 6. Checklist
 
 - [ ] `python3 -m py_compile` no falla en ningún script.
-- [ ] `python3 01-tooling/scripts/tests/selftest.py` pasa (14/14 checks).
+- [ ] `python3 01-tooling/scripts/tests/selftest.py` pasa (19/19 checks).
 - [ ] `python3 01-tooling/scripts/tests/check_links.py` no reporta enlaces rotos.
 - [ ] La CI está en verde.
 - [ ] Si el PR toca `00-metodologia/`, `02-plantillas/` o `04-formacion/`,

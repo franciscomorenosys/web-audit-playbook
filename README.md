@@ -75,7 +75,14 @@ cierra con la entrega.
 | └─ └─ [`pii_redact.py`](01-tooling/scripts/pii_redact.py) | **Redacción de PII y secretos** antes de compartir evidencia. Genera la copia sanitizada y el informe de conteos. |
 | └─ └─ [`attack_surface_report.py`](01-tooling/scripts/attack_surface_report.py) | Consolida sonda + secretos + cabeceras en el **Attack Exposure Score** y su informe Markdown/JSON. |
 | └─ └─ [`authorization.example.json`](01-tooling/scripts/authorization.example.json) | Formato de la autorización firmada que consume `scope_guard.py` (hosts, ventana, métodos, firma). Plantilla a rellenar. |
-| └─ └─ [`tests/selftest.py`](01-tooling/scripts/tests/selftest.py) | Auto-prueba: 14 checks **sin ninguna llamada de red**. `python3 tests/selftest.py` desde `01-tooling/scripts`. |
+| └─ └─ [`tests/selftest.py`](01-tooling/scripts/tests/selftest.py) | Auto-prueba: 19 checks **sin ninguna llamada de red**. `python3 tests/selftest.py` desde `01-tooling/scripts`. |
+| **`console/`** | Consola interna de operaciones de seguridad: 8 vistas (superficie, hallazgos, secret register, API surface, exposición a ataques, evidencia, autorización, registro de acciones). Backend Python stdlib, cero dependencias, cero peticiones externas. |
+| └─ [`README.md`](console/README.md) | Cómo arrancarla, qué evidencia espera y el aviso de que no sustituye la revisión humana. |
+| └─ [`QA-VISUAL.md`](console/docs/QA-VISUAL.md) | Auditoría visual con navegador real: contraste WCAG por vista, desbordamientos, cargas de red y correcciones aplicadas. |
+| **`deploy/`** | Stack de la VPS autoalojada: Ollama, consola, Open WebUI opcional, almacén de hallazgos y red privada. |
+| └─ [`docker-compose.yml`](deploy/docker-compose.yml) | Definición del stack. Ningún puerto de administración se publica en `0.0.0.0`. |
+| └─ [`README.md`](deploy/README.md) | Despliegue paso a paso, backup, rotación de secretos y firewall. |
+| └─ [`hardening.md`](deploy/hardening.md) | Checklist de endurecimiento con el comando de verificación de cada control. |
 | **`02-plantillas/`** | Las tres capas de entregable, como plantillas. |
 | └─ [`teaser-report/`](02-plantillas/teaser-report/) | Plantilla del teaser PDF (HTML→PDF, gráficos, `verify.py`, reglas de contenido «cero técnico»). Ya construida. |
 | └─ [`informe-completo/`](02-plantillas/informe-completo/README.md) | Estructura del informe técnico de **10 secciones (§0–§9)** — capa 2. Referencia viva: el caso real. |
@@ -96,6 +103,11 @@ cierra con la entrega.
 | └─ [`registro-de-acciones-fase-2.csv`](05-plantillas-de-trabajo/registro-de-acciones-fase-2.csv) | Formato de captura de acciones de Fase 2: hora, host, endpoint, técnica, cuenta usada, datos tocados, footprint, rollback y severidad — incluidas las **refutadas y las no ejecutadas**. |
 | **`research/`** | Investigación que sostiene las decisiones de stack. No es metodología: es el **porqué** de cada decisión técnica, con la fecha en que se verificó cada dato. |
 | └─ [`06-stack-y-ecosistema.md`](research/06-stack-y-ecosistema.md) | Stack para escalar: runtime LLM autoalojado (Ollama / llama.cpp), interfaz interna, tooling de la consola y **qué se descartó y por qué**. |
+
+![Consola de operaciones de seguridad](console/docs/vista-previa/superficie.png)
+
+*La vista 01 SUPERFICIE de la consola en modo demostración (conjunto sintético):
+el dial del score, la fórmula y el hex-grid de subdominios.*
 
 ---
 
@@ -192,7 +204,7 @@ herramienta nueva. Contributions welcome — con tres reglas que no se negocian:
 ```bash
 git clone https://github.com/franciscomorenosys/web-audit-playbook.git
 cd web-audit-playbook
-python3 01-tooling/scripts/tests/selftest.py        # 14 checks, sin red
+python3 01-tooling/scripts/tests/selftest.py        # 19 checks, sin red
 python3 01-tooling/scripts/tests/check_links.py     # enlaces relativos
 ```
 

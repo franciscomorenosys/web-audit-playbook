@@ -1,0 +1,48 @@
+# =============================================================================
+# Web Audit Playbook — .dockerignore
+# =============================================================================
+#
+# POR QUÉ ESTE FICHERO ES TAN ESTRICTO
+# ------------------------------------
+# El contexto de build de la imagen de la consola es la RAÍZ del repositorio
+# (la consola necesita `console/` Y `01-tooling/scripts/`), así que el daemon
+# de Docker recibe como contexto todo lo que hay aquí abajo. Y aquí abajo, en
+# el portátil del auditor, está `03-casos/`: la evidencia de clientes REALES.
+#
+# Esta es una lista blanca, no una lista negra. Primero se excluye TODO
+# (`*`), y después se re-incluyen sólo las rutas que la imagen necesita. El
+# resultado: `03-casos/`, `research/`, `PLAN-MAESTRO.md` y cualquier otra
+# cosa **jamás entran en el contexto de build**, ni por descuido.
+#
+# Las reglas se evalúan en orden y **gana la última que coincide**: por eso
+# las exclusiones específicas van DESPUÉS de las re-inclusiones.
+#
+# -----------------------------------------------------------------------------
+
+# 1. Fuera todo.
+*
+
+# 2. Y de vuelta dentro sólo lo que la imagen necesita.
+!console/
+!01-tooling/
+!05-plantillas-de-trabajo/
+
+# 3. De `05-plantillas-de-trabajo/` sólo el CSV del registro de acciones: es
+#    el fichero que el generador de la demo copia a la evidencia sintética.
+#    El resto de los documentos de trabajo no van a la imagen.
+05-plantillas-de-trabajo/*
+!05-plantillas-de-trabajo/registro-de-acciones-fase-2.csv
+
+# 4. El conjunto de demostración de la consola NO se versiona (ver
+#    .gitignore): es sintético y se regenera dentro del contenedor.
+console/demo/evidencia/
+
+# 4-bis. Capturas de pantalla de la consola: son documentación del desarrollo,
+#    no runtime. No van a la imagen.
+console/docs/
+
+# 5. Ruido de build.
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+.DS_Store

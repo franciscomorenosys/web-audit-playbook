@@ -817,8 +817,8 @@ Todos los paths son relativos a la raíz del caso: `03-casos/<cliente>/`.
 
 | Entrada | `01-tooling/scripts/` |
 |---|---|
-| **Acción** | `python3 tests/selftest.py` — 14 checks, **sin ninguna llamada de red** (uno bloquea `socket` para comprobarlo) |
-| **Salida** | `PASS` en los 14 checks, salida 0 |
+| **Acción** | `python3 tests/selftest.py` — 19 checks, **sin ninguna llamada de red** (uno bloquea `socket` para comprobarlo) |
+| **Salida** | `PASS` en los 19 checks, salida 0 |
 | **Artefacto** | `evidencia/fase2/selftest_toolkit.txt` |
 | **Parada** | Si algún test falla, **no se abre la ventana**. Un toolkit que no sabe rechazarse no sirve para una fase con datos de pacientes. |
 

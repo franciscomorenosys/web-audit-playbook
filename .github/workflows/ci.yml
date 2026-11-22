@@ -64,7 +64,7 @@ jobs:
             | xargs -0 python3 -m py_compile
           echo "OK: ${count} script(s) compilan."
 
-      # (b) Auto-prueba del toolkit. 14 checks y NINGUNA llamada de red:
+      # (b) Auto-prueba del toolkit. 19 checks y NINGUNA llamada de red:
       #     el propio selftest bloquea los sockets para comprobarlo.
       - name: Auto-prueba (selftest)
         run: python3 01-tooling/scripts/tests/selftest.py

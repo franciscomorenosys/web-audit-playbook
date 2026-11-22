@@ -340,7 +340,7 @@ cd 01-tooling/scripts
 python3 tests/selftest.py
 ```
 
-14 checks, **sin ninguna llamada de red** (uno de ellos bloquea `socket` para
+19 checks, **sin ninguna llamada de red** (uno de ellos bloquea `socket` para
 comprobarlo). Cubre: detección de secretos sin filtrar valores, redacción de
 PII con JSON válido, HSTS ausente, host no autorizado rechazado, host
 autorizado aceptado, autorización sin firma rechazada, `POST` descartado,
