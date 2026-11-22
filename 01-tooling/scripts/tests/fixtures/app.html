@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<!-- FIXTURE DE PRUEBAS — contiene secretos FICTICIOS. No usar fuera del selftest. -->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Clínica Ejemplo — Fixture de pruebas</title>
+  <meta name="description" content="Fixture local para el selftest del toolkit.">
+
+  <script src="https://www.ejemplo-auditoria.mx/js/app.js"></script>
+  <script src="https://cdn.ejemplo-tercero.mx/vendor/jquery.min.js"></script>
+  <script src="https://analytics.ejemplo-tercero.mx/analytics.js" integrity="sha384-FAKEHASHFAKEHASHFAKEHASHFAKEHASHFAKEHASHFAKEHASH=" crossorigin="anonymous"></script>
+  <script src="https://cdn.sin-sri.ejemplo-tercero.mx/maps.js"></script>
+
+  <link rel="stylesheet" href="https://cdn.ejemplo-tercero.mx/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+</head>
+<body>
+  <h1>Clínica Ejemplo</h1>
+  <form action="/api/v1/login" method="post">
+    <input type="text" name="usuario">
+    <input type="password" name="password">
+  </form>
+
+  <script>
+    // Configuración de la clínica (FIXTURE: valores ficticios).
+    var AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE";
+    var AWS_SECRET_ACCESS_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
+    var STRIPE_KEY = "sk_live_51HqFakeFakeFakeFakeFakeFakeFAKEFAKE";
+    var STRIPE_PUBLISHABLE = "pk_live_51HqFakeFakeFakeFakeFakeFakeFAKEFAKE";
+    var API_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+    var GOOGLE_MAPS_KEY = "AIzaSyD-EXAMPLEKEY0123456789abcdefghijk";
+    var FIREBASE_DB = "https://clinica-ejemplo-demo.firebaseio.com";
+    var ENDPOINT_CITAS = "/api/v1/citas";
+    var ENDPOINT_ADMIN = "/admin/pacientes";
+    var DB_URI = "postgres://clinica:PasswordSecreto123@db.interno.ejemplo-auditoria.mx:5432/clinica";
+    var WHATSAPP = "5215555555555";
+
+    fetch(ENDPOINT_CITAS, { method: "POST" });
+    fetch("/api/v1/expedientes/{id}", { method: "GET" });
+    axios.get("https://api.ejemplo-tercero.mx/v1/pacientes");
+    $.ajax({ url: "/admin/configuracion", method: "GET" });
+
+    const consulta = `query PacientesPorDoctor($id: ID!) { paciente(id: $id) { nombre diagnostico } }`;
+  </script>
+</body>
+</html>

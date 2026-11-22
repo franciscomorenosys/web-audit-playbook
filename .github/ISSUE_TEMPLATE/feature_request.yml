@@ -1,0 +1,81 @@
+name: Propuesta de mejora
+description: Sugiere un script, una sección de metodología, una plantilla o una mejora de la CI.
+title: "[mejora] "
+labels: ["mejora"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Este proyecto crece con cada cliente. Las propuestas que más valen son
+        las que respondan a una pregunta real: *«esto me pasó en una auditoría
+        y no había forma de documentarlo»*.
+
+        - **No incluyas evidencia ni datos de clientes.** Usa un ejemplo sintético.
+        - **No propongas técnicas de explotación ni de bypass de RoE.** Ver
+          [`SECURITY.md`](https://github.com/franciscomorenosys/web-audit-playbook/blob/main/SECURITY.md).
+        - Las propuestas que tocan la metodología se revisan con más cuidado: la
+          metodología está bajo **CC BY-NC-ND 4.0** y los cambios se evalúan
+          contra ese criterio.
+
+  - type: input
+    id: titulo
+    attributes:
+      label: Título
+      description: "Una frase: qué quieres que pase."
+      placeholder: "Añadir un módulo de verificación de cabeceras de correo (SPF/DKIM/DMARC)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - Metodología (00-metodologia/)
+        - Tooling (01-tooling/scripts/)
+        - Plantillas y entregables (02-plantillas/)
+        - Formación (04-formacion/)
+        - Formatos de trabajo (05-plantillas-de-trabajo/)
+        - Infraestructura del repositorio (CI, issues, documentación)
+    validations:
+      required: true
+
+  - type: textarea
+    id: problema
+    attributes:
+      label: El problema o la necesidad
+      description: |
+        ¿Qué no se puede hacer hoy? Cuéntalo como lo contarías en una
+        auditoría: qué falta, en qué paso del ciclo y qué consecuencia tiene.
+    validations:
+      required: true
+
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Propuesta concreta
+      description: Qué quieres añadir o cambiar. Con ejemplos de entrada/salida si es un script.
+      placeholder: |
+        ## Entrada
+        ...
+        ## Salida esperada
+        ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas consideradas
+      description: Opciones que descartaste y por qué.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Antes de enviar
+      options:
+        - label: La propuesta no requiere datos de clientes ni evidencia real.
+        - label: He buscado si ya está propuesto en otro issue.
+        - label: "(Si es código) Mantiene la dependencia cero: Python stdlib."

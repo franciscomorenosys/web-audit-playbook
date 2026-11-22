@@ -1,0 +1,85 @@
+════════════════════════════════════════════════════════════════════
+  PAQUETE DE REVISIÓN — Segunda mirada técnica
+  Segundo opinión sobre el diagnóstico de seguridad de la clínica
+════════════════════════════════════════════════════════════════════
+
+QUÉ HAY QUE HACER
+────────────────────────────────────────────────────────────────────
+
+  1. Abre esta carpeta:  05-plantillas-de-trabajo/paquete-revision/
+
+  2. Chat nuevo en ChatGPT (o equivalente)
+
+  3. Pega el contenido de  00-CONTEXTO.md   ← SIEMPRE PRIMERO
+     (es el código de contexto: quién es el cliente, qué son los dos
+      documentos, por qué el teaser no trae el detalle técnico, la
+      doctrina pasiva, y los 3 errores propios que ya detecté)
+
+  4. Sube estos 3 archivos:
+       01-INFORME-TECNICO-SANITIZADO.md
+       02-TEASER-13-PAGINAS.pdf
+       03-METODOLOGIA.md
+
+  5. Pega el contenido de  04-PREGUNTAS.md  →  BLOQUE A
+     (espera la respuesta antes de seguir)
+
+  6. Continúa con los bloques B, C, D, E y F, uno por mensaje.
+
+  7. Al final, los 4 follow-ups del final de 04-PREGUNTAS.md
+
+
+QUÉ NO SUBIR NUNCA
+────────────────────────────────────────────────────────────────────
+
+  ✗  ../MAPA-DE-REDACCION.md          ← es la clave inversa del sanitizado
+  ✗  ../../03-casos/.../evidencia/     ← 71 de 99 archivos traen identificadores
+  ✗  el informe técnico ORIGINAL (sin sanitizar)
+  ✗  ../registro-de-acciones.EXAMPLE.csv  ← tiene comandos contra el sitio real
+
+  El sanitizado se verificó con grep: 77/77 objetivos literales en 0
+  coincidencias, y conserva el 100% del sustancia técnica (CVEs, CVSS,
+  OWASP, WSTG, artículos de ley, UMA, los IDs del registro, los tickets
+  de escalamiento, las 3 olas de remediación).
+
+
+DESPUÉS DE LA REVISIÓN
+────────────────────────────────────────────────────────────────────
+
+  Lee  LOOP-DE-CORRECCION.md
+
+  Ese documento mapea cada tipo de observación a su destino exacto:
+
+    "este dato es incorrecto"      → informe + propagar al teaser si cambia
+    "esta conclusión no se sostiene" → informe, o bajar severidad / retirar
+    "el impacto está mal calibrado"  → recalcular buckets → regenerar gráfico
+    "falta una superficie"           → auditarla ANTES de que la mention el cliente
+    "el pricing está mal"            → teaser §7
+    "faltó un ángulo legal"          → informe §4 + teaser §4
+    "hay un riesgo no registrado"    → registro de riesgos + ticket
+
+  Regla de oro del loop:
+
+    La segunda mirada NO se exhibe en la propuesta.
+    SE APLICA a la propuesta.
+
+  El bloque "Verificación independiente" ya está insertado en el HTML
+  del teaser (sección 9) pero DESACTIVADO (display:none). La
+  recomendación es no activarlo — ver LOOP-DE-CORRECCION.md §4.
+
+
+TRAMPA CONOCIDA
+────────────────────────────────────────────────────────────────────
+
+  Si cambias los números de severidad en el informe, el GRÁFICO del teaser
+  se desincroniza salvo que regeneres:
+
+      source .venv/bin/activate
+      python3 make-charts.py
+      python3 build.py
+      python3 verify.py
+
+  verify.py debe terminar con "TODAS LAS VERIFICACIONES PASARON" antes
+  de mandar el PDF a cualquier persona.
+
+  BACKUP del HTML antes de editarlo:
+      teaser-dental-easy.html.bak

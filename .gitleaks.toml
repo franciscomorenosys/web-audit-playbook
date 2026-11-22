@@ -1,0 +1,78 @@
+# ===========================================================================
+#  Gitleaks — configuración de Web Audit Playbook
+# ---------------------------------------------------------------------------
+#  Los scripts de `01-tooling/scripts/` se escribieron para poder detectar
+#  secretos SIN necesitar dependencias, y eso incluye poder comprobarse a sí
+#  mismos. Para eso existen los fixtures de test: valores de credenciales que
+#  tienen la FORMA de un secreto real pero que **no existen en ningún
+#  proveedor** (son los ejemplos canónicos de AWS, Stripe, Google y un JWT
+#  de ejemplo, con los valores sustituidos por «EXAMPLE» / «Fake» / «EJEMPLO»).
+#
+#  Este fichero NO desactiva el escáner: sólo declara, valor a valor y ruta a
+#  ruta, los secretos SINTÉTICOS conocidos. Cualquier otro secreto —en
+#  cualquier otra ruta, con cualquier otro valor— hace fallar la CI.
+#
+#  Referencia: https://github.com/gitleaks/gitleaks#configuration
+# ===========================================================================
+
+title = "Web Audit Playbook — allowlist de secretos sintéticos"
+
+[extend]
+# Se usan las reglas por defecto de Gitleaks y se añaden sólo las allowlists
+# de abajo. `useDefault = false` desactivaría el escáner: no se hace.
+useDefault = true
+
+
+# ---------------------------------------------------------------------------
+#  1. Fixtures de la auto-prueba y las constantes que el selftest comprueba
+# ---------------------------------------------------------------------------
+# `01-tooling/scripts/tests/fixtures/app.html` contiene, marcado en el propio
+# fichero como «FIXTURE: valores ficticios», un juego de credenciales de
+# ejemplo. `selftest.py` las repite en la tupla `FAKE_SECRET_VALUES` para
+# comprobar que el escáner las detecta y **no imprime su valor completo**.
+[[allowlists]]
+description = "Secretos sintéticos de los fixtures de test y del selftest"
+paths = [
+  '''(?i)01-tooling/scripts/tests/fixtures/.*''',
+  '''(?i)01-tooling/scripts/tests/selftest\.py''',
+]
+regexTarget = "secret"
+regexes = [
+  # Clave de ejemplo canónica de AWS (la de la documentación de AWS).
+  '''AKIAIOSFODNN7EXAMPLE''',
+  '''wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY''',
+  # Stripe: clave y clave publicable de ejemplo.
+  '''sk_live_51HqFakeFakeFakeFakeFakeFakeFAKEFAKE''',
+  '''pk_live_51HqFakeFakeFakeFakeFakeFakeFAKEFAKE''',
+  # JWT de ejemplo de jwt.io.
+  '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ\.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c''',
+  # Clave de API de Google de ejemplo.
+  '''AIzaSyD-EXAMPLEKEY0123456789abcdefghijk''',
+  # Base de datos Firebase de demostración.
+  '''clinica-ejemplo-demo\.firebaseio\.com''',
+  # URI de base de datos con credenciales embebidas (host inexistente).
+  '''postgres://clinica:PasswordSecreto123@db\.interno\.ejemplo-auditoria\.mx:5432/clinica''',
+]
+
+
+# ---------------------------------------------------------------------------
+#  2. Ejercicio E3 de la guía de formación
+# ---------------------------------------------------------------------------
+# `04-formacion/guia-de-formacion-auditor.md` incluye un ejercicio con
+# credenciales ficticias. El propio documento lo dice: «CONTENIDO 100%
+# FICTICIO para el ejercicio E3. Ninguno de estos valores existe en ningún
+# proveedor real».
+[[allowlists]]
+description = "Secretos sintéticos del ejercicio E3 de la guía de formación"
+paths = [
+  '''(?i)04-formacion/guia-de-formacion-auditor\.md''',
+]
+regexTarget = "secret"
+regexes = [
+  '''sk_live_EJEMPLO000000000000000000''',
+  '''AIzaSyEJEMPLO00000000000000000000000000''',
+  '''AKIAEJEMPLO000000000''',
+  '''hooks\.slack\.com/services/TEJEMPLO1/BEJEMPLO2/EJEMPLO3''',
+  '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJzdWIiOiJleGFtcGxvIn0\.EJEMPLOFIRMA0000''',
+  '''postgresql://usuario_ejemplo:clave_ejemplo@db\.ejemplo-interno\.mx:5432/clinica_ejemplo''',
+]

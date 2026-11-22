@@ -1,0 +1,322 @@
+# PROMPT MAESTRO — Segunda mirada técnica
+
+> Copia **todo** lo que está debajo del separador y pégalo como **primer mensaje**.
+> Después adjunta los archivos en el orden indicado.
+> Este prompt **sustituye** al `00-CONTEXTO.md` — no lo pegues también.
+
+---
+
+# ENCARGO
+
+Eres un consultor senior de seguridad de aplicaciones y cumplimiento normativo
+con experiencia en México. Voy a adjuntar el trabajo completo de una auditoría de
+seguridad digital y de cumplimiento que realicé sobre el sitio web de una clínica
+dental en México (una sola sede, Ciudad de México). Es un encargo real de un
+cliente real con el que tengo relación comercial, y los materiales que produje
+están a punto de enviarse.
+
+Necesito una **lectura crítica y adversarial** de ese trabajo: no una validación.
+Si todo estuviera bien, lo sabría — y si no encuentras nada que corregir, es que
+no leíste con suficiente profundidad o que te falta un ángulo.
+
+Prioriza, en este orden:
+1. **Errores factuales** — algo que afirmo que es falso, o un dato mal citado
+2. **Defectos de método** — una conclusión que no se sostiene con la evidencia
+3. **Juicios débiles** — una afirmación con más confianza de la que merece, o un riesgo mal dimensionado
+4. **Decisiones comerciales** — pricing, alcance, framing, estructura del entregable
+5. **Ecosistema** — lo que el marco legal mexicano no cubre y yo no vi
+
+---
+
+# CONTEXTO DEL PROYECTO
+
+**El cliente.** Una clínica dental de una sola sede en la Ciudad de México. Site con
+17 URLs públicas. El dueño es un odontólogo, no técnico. La decisión de contratar
+se toma él solo, y hay un presupuesto real (SMB mexicano).
+
+**El stack del objetivo.** WordPress 7.1.3 + Divi 4.27.4/4.27.7, jQuery 3.7.1 +
+Migrate 3.4.1, jQuery UI 1.13.8, GSAP 3.7.1 + ScrollToPlugin, FontAwesome
+5.15.4 (mayoría de páginas) y 6.5.1 (una página), fitVids. Hosting compartido:
+nginx 1.29.8 al frente, Apache origin, capa de caché de página completa.
+Versión de PHP y MySQL **no observables desde afuera**. 63 bloques `@font-face`
+(9 pesos × 2 familias, sin `unicode-range`). Fotos en PNG, cero `<picture>`,
+`alt=""` en el 100 % de las imágenes, cero lazy-loading.
+
+**Superficie pública.** 17 URLs. **Cero analítica instalada** — sin GA4, GTM,
+Clarity, Hotjar, Meta Pixel, ni cookie banner funcional. Cero `meta description`
+en las 17. Cero JSON-LD en las 17. Sin canonical en el home. `<title>` del home
+de 133 caracteres. Home de 299 palabras; páginas de servicio de 329–424.
+Blog inexistente (1 post "Hello world!"). Sin página de equipo, sin hub
+`/servicios/`, sin FAQ, sin `/nosotros/`, sin precios. Sin E-E-A-T: cero
+matches de `Cédula`, `colegiación`, `Dr./Dra.`, `Licenciado`. Sin Open Graph,
+sin Twitter Card, sin hreflang, sin `llms.txt`.
+
+---
+
+# QUÉ HICIMOS PREVIAMENTE (resumen del trabajo)
+
+## Fase 1 — Auditoría pasiva (dos pasadas, ~330 requests)
+
+**Doctrina que me impuse y respeté.** GET/HEAD únicamente, ≥1 s de espaciado.
+Cero POST/PUT/PATCH/DELETE, cero login, cero fuerza bruta, cero
+nuclei/nikto/nmap/sqlmap, cero wordlists grandes.
+
+Prohibiciones explícitas:
+- **Cero requests** al endpoint que recibe los datos de los pacientes
+  (Google Apps Script). Mirarlo ya sería un incidente.
+- **Nunca revertí el hash MD5 de un gravatar.** Lo reporté como oráculo de riesgo;
+  de-anonimizar a una persona no es mi trabajo.
+- **Cero requests** a hosts de la agencia web del cliente ni a su staging.
+  Solo leí índices públicos (crt.sh, Wayback CDX).
+- **Cero sondeo activo** de los vecinos de la IP compartida. Solo InternetDB,
+  ipinfo y DNS.
+- **Nunca hice submission a urlscan.io** (causa una visita activa). Solo la API
+  de lectura.
+
+**Lo que encontré, resumido por dominio:**
+
+| Dominio | Estado | Hallazgos principales |
+|---|---|---|
+| Datos del paciente | 🔴 | El formulario de cita manda nombre, correo, teléfono, servicio, fecha, hora y **"motivo de consulta" (dato de salud)** a un deployment de Google Apps Script con ID hardcodeado en JS público. **No existe aviso de privacidad.** La página de cookies es un 404. Sin checkbox de consentimiento. El JS de producción tiene placeholders sin reemplazar (`WHATSAPP_NUMBER = '521234567890'` y un comentario `// REEMPLAZAR URL APPSCRIPT`) |
+| Cumplimiento legal | 🔴 | Sin aviso de privacidad. Falta la cédula profesional que la LGS art. 83 exige **en la publicidad**. Dos claims prohibidos en producción ("tratamientos sin dolor" en la meta description; "resultados visibles desde el primer día" en el home). Transferencia internacional sin cláusula |
+| Exposición pública | 🔴 | **La capa de caché sirve los 404 con HTTP 200** — probado: una URL inexistente devuelve 404 y luego 200, 200, 200. Cualquier URL inventada se vuelve una página indexable. Enumeración de dos cuentas de WordPress por archive de autor (una oculta al REST API). Spam de casino publicado en vivo con el email y la URL del spamer **precargados en el formulario cacheado**. Versión de WordPress visible en el `meta generator`. API REST y `readme.html` expuestos |
+| Correo / suplantación | 🔴 | **Sin registro DMARC** (NXDOMAIN en 4 resolvers). SPF `v=spf1 include:spf.titan.email ~all` (softfail). DKIM en un solo selector. Sin CAA, sin BIMI, sin MTA-STS |
+| Integridad de la plataforma | 🟠 | La caché sirve **6 versiones distintas de WordPress** (6.8.1 / 6.8.2 / 6.8.3 / 6.9 / 7.0.3 / 7.1.3) y 2 de Divi. Divi 4.27.4 cae en el rango de varios CVEs |
+| Infraestructura / alojamiento | 🟠 | **Certificado multi-inquilino compartido**: el CN es de otro cliente del hosting y la lista SAN expone el portafolio completo de la agencia web del cliente (~20 marcas, en su mayoría prácticas médicas, INCLUDING un host de pruebas). Redirección HTTP→HTTPS ausente: las 4 combinaciones esquema×host devuelven 200 con HTML byte-idéntico. Sin HSTS, CSP, XFO, XCTO ni Referrer-Policy. **Mozilla Observatory: F (5/100)**, 6 de 12 tests fallados. Sin SRI en los assets de CDN. **Puertos 3306, 21, 25 y cPanel expuestos en el host compartido.** El host geolocaliza a Brasil, no México |
+
+**Corrección importante que ya hice:** reporté en la primera pasada "TLS 1.0/1.1 → HTTP 200". **Era un falso positivo** por semántica de curl — `--tlsv1.0` fija un *mínimo*, no un máximo, así que se negoció TLS 1.3. Reverificado con OpenSSL legacy: el servidor **rechaza correctamente** TLS 1.0/1.1 (alert 70). Retirado. No hay acción.
+
+**Lo que salió bien (y está en la sección correspondiente del teaser):** higiene de archivos interna por encima del promedio — 52 rutas sensibles verificadas (`.env`, `.git`, backups, `.sql`, `debug.log`, `.DS_Store`, `phpinfo`, `phpmyadmin`, `elmah.axd`, `web.config`, `.svn`) y **cero datos reales expuestos**. Cero secrets en los bundles de JS (16 patrones escaneados, 1 solo hit: la URL del Apps Script). Cifrados TLS fuertes. **Cero rastreadores y cero cookies de terceros.** Sin denegación de servicio.
+
+## Fase 2 — Research de CVEs, marco legal y encuadre comercial
+
+**CVE-2026-87902** (GHSA-7hp8-65ch-5whp, CVSS v4.0 **9.2**, CWE-98) — traversal
+en resolución de plantillas que lleva a RCE condicional. Afecta `6.8.0–6.8.9`,
+`6.9.0–6.9.8`, `7.0.0–7.0.5`, `7.1.0–7.1.1`. No autenticado, remoto, sin
+interacción. **5 de las 6 versiones cacheadas caen en rango.** El advisory nombra
+Twenty Twelve/Fourteen/Neve/Hestia/Sydney — Divi no está nombrado, así que el
+precondition de directorio `page-*` queda sin verificar — pero también dice que la
+configuración default de cPanel está afectada cuando hay PHP anterior a 8.5.
+
+**CVE-2026-109618 y CVE-2026-109619** (ambas CVSS 9.2, publicadas 2026-10-21) —
+RCE no autenticado en PHP por corrupción por OOM y por estado global obsoleto.
+Afectan cualquier aplicación PHP. Riesgo mayor con `mod_php`. Corregidas en PHP
+8.5.12 / 8.4.27 / 8.3.36 / 8.2.35. WordPress publicó advisory el mismo día; el
+UK NCSC注意事项: *"donde no sea factible remediar de inmediato, considerar tomar
+el sistema fuera de línea"*. PHP < 8.2 deja de recibir parches el 31-dic-2026.
+
+**CVE-2026-91707** (Divi, opción "Force Enable D4 Shortcode Framework") y
+**GHSA-xhp5-863h-rhfr** (XML-RPC, permite publicar `customize_changeset` que
+evadea `edit_css`) — el segundo cubre `≤6.8.8 / ≤6.9.7 / ≤7.0.4`, las cinco
+versiones obsoletas. **CVE-2026-63030** (Critical — confusión de batch-route del
+REST API + SQLi → RCE) afecta `6.9.0–6.9.4 / 7.0.0–7.0.1`, ambos en el set
+observado.
+
+**Marco legal — todo verificado contra fuente primaria:**
+
+- **LFPDPPP nueva** (DOF 20-mar-2025, vigente 21-mar-2025, última reforma
+  14-nov-2025, abrogó la de 2010). **El INAI ya no existe** — la autoridad es
+  la Secretaría Anticorrupción y Buen Gobierno. Multa máxima: **320,000 UMA ×
+  $117.31** (INEGI, DOF 09-ene-2026) = **$37,539,200 MXN** (art. 59 fr. III; se
+  duplica para datos sensibles, fr. IV). Incumplimiento del aviso = infracción
+  art. 58 fr. V. Falta de datos de salud = ~$18.8 M (art. 59 fr. II) **más
+  posibilidad de orden de detener el tratamiento de datos, lo que detendría las
+  citas**. Transferencia internacional sin cláusula = art. 35 + art. 58 fr. X.
+  **Art. 19: notificar a los pacientes afectados de inmediato.** La obligación de
+  notificar a la autoridad con plazo de 30 días de la ley de 2010 **ya no existe**
+  en el texto vigente. ARCO art. 22, 20 días hábiles. Minimización y periodo de
+  conservación art. 12.
+- **Ley General de Salud art. 83** — la cédula profesional debe aparecer **en la
+  publicidad**; el sitio web es publicidad. Ausente.
+- **Reglamento LGS en Materia de Publicidad** — art. 6 fr. I (no atribuir
+  cualidades terapéuticas que no correspondan) y **art. 18** (afirmaciones de
+  eficacia no comprobadas científicamente). Mi nota: el art. 6 fr. II es la
+  fracción de modificación de conducta (tabaco/alcohol) y **no aplica** a
+  "sin dolor"; el que decide es el art. 18.
+- **LFPC art. 50** — si se anuncia un precio y no se cumple, se debe la diferencia
+  económica **y** el servicio.
+
+**Dos preguntas que respondí por ausencia, no por cita:**
+- **No existe obligación legal mexicana de publicar precios de odontología.**
+  Busqué en LGS, LFPC, ambos Reglamentos y LFPDPPP y no encontré el artículo.
+  Además el art. 5 del Reglamento de Publicidad exime de la ley de salud a los
+  avisos que son solo precio. **Decisión comercial, no obligación legal.**
+- **No existe ley mexicana que prohíba las fotos "antes y después"** en odontología
+  (cero matches). Las restricciones reales son: consentimiento específico y
+  documentado (una foto de sonrisa es dato de salud), las claims del Reglamento,
+  y publicidad engañosa bajo LFPC.
+
+**Costo de brecha — fuente primaria.** IBM Security & Ponemon Institute, *Cost of
+a Data Breach Report 2026* (602 organizaciones, 16 países, 17 industrias, campo
+marzo-2025 a febrero-2026). Global **USD 4.99 M** (+12% interanual, récord).
+América Latina (muestra que **incluye México**) **USD 4.65 M**. Sector salud
+(hospitales y clínicas) **USD 6.64 M** — el más caro por decimotercer año
+consecutivo. **USD 192 por registro** de PII, en 52 % de las brechas. **247 días**
+promedio de detección+contención. **No hay desglose por México ni por pyme** — lo
+digo explícitamente en el documento y presento el sector salud como "un techo,
+no un promedio de una clínica como la suya".
+
+## Fase 3 — El modelo de entrega (tres capas)
+
+| Capa | Audience | Contenido |
+|---|---|---|
+| **Teaser** (13 págs, PDF) | El odontólogo, no técnico | 39 hallazgos contados por categoría y severidad; exposición legal en pesos; costo de brecha con fuente; 6 dominios calificados; qué está bien; 3 niveles de servicio con precios; invitación a reunión |
+| **Informe técnico** (1,546 líneas) | Interno / sysadmin | Cada hallazgo con evidencia literal, comando de reproducción, owner, score, roadmap en 3 olas, 3 tickets de escalamiento redactados |
+| **Brief de 1 página** | Dueño | Lenguaje sin jerga |
+
+**El teaser NO incluye:** identificadores de CVE, versiones, rutas, endpoints,
+comandos, usernames, teléfonos, correos, nombre de la agencia ni el de sus otros
+clientes. Verificado con grep en 4 superficies: texto extraído, bytes crudos,
+metadatos y HTML fuente — 0 coincidencias.
+
+**El razonamiento:** el informe técnico es el producto que se entrega y se cobra.
+Un teaser que regala el detalle técnico es un teaser que no se compra. Es práctica
+estándar en consultoría de seguridad (teaser report / advance audit). **Quiero que
+evalúes si el balance está bien calibrado o si me pasé.**
+
+## Fase 4 — La corrección de las cifras (esto es lo que quiero que audites)
+
+Reporté inicialmente "38 hallazgos, 4 críticos" en el teaser. **Los números no
+tenían fuente** — un paso anterior los repartió sin respaldo.
+
+El registro canónico tiene **39 filas** y separa dos ejes distintos:
+- **Score = Likelihood × Impact** (1–5 cada uno) → mide riesgo, y se usa para
+  priorizar y para el roadmap
+- **Severidad** → lo derivé de la columna **Impacto** (I=5→Crítico, I=4→Alto,
+  I=3→Medio, I≤2→Bajo), que es la definición estándar
+
+Resultado: **11 críticos / 16 altos / 10 medios / 2 bajos = 39**. El `§5.6` del
+informe decía además "1,029 puntos agregados" cuando la suma real de los scores
+es **624**. Corregido. Validé que `Score == L×I` se cumple en las 39 filas.
+
+**Eligió ICE en vez de RICE** porque **no hay analítica instalada**: "Reach" no
+es calculable y RICE forzaría a inventarlo. Escala de ejecución: **RR/hr =
+Score ÷ horas de remediación**, para ordenar la cola de trabajo. Al menos 12 de
+los 39 ítems son 🔒 (escalación al hosting o a la agencia, no accionables por el
+cliente) y valen 296 de los 624 puntos.
+
+**Precios — y aquí necesito tu juicio.** Los tres niveles ($8,000 diagnóstico /
+$45,000–85,000 reconstrucción / desde $12,000 al mes continuidad) **NO tienen
+respaldo de datos duros**: son convención de mercado. El benchmark quesí usé:
+assessment completo de freelancer **$12,000–35,000**, boutique $40,000–120,000,
+"punto dulce del SMB mexicano **$12,000–30,000**", retainer mensual $4,000–12,000.
+**Estoy 33–60 % abajo del mercado en el nivel 1.** Mi fear es doble: que me
+subestime, y que la clínica no lo alcance. ¿Qué hago?
+
+---
+
+# LOS ARCHIVOS — en este orden
+
+Voy a adjuntarlos en este orden. Confirma que los viste todos antes de empezar.
+
+| # | Archivo | Qué contiene | Qué necesito de ti |
+|:-:|---|---|---|
+| 1 | `INFORME-TECNICO-SANITIZADO.md` | El informe completo, 1,553 líneas. Mapeo OWASP Top 10:2021 + WSTG v4.2, research de CVEs con rangos verbatim, threat model de phishing, compliance con artículos citados, **registro de 39 riesgos** con L/I/score/owner/horas/RR-hr, roadmap en 3 olas, **3 tickets de escalamiento redactados**, y las notas de "qué no pude determinar" | **El objeto principal de la revisión.** Busca afirmaciones que no se sostengan, evidencia faltante, y riesgos que no registré |
+| 2 | `Evaluacion-Seguridad-Clinica-Dental-Easy.pdf` | El teaser de 13 páginas que verá el cliente | ¿Es convincente para un no técnico? ¿Se lee como anzuelo? ¿La §legal asusta de más? ¿El §"Lo que ya está bien" es verificable por él? ¿Entiende los precios en 10 segundos? |
+| 3 | `ciclo-de-auditoria.md` | Las 11 fases de la metodología, con objetivo, herramientas, evidencia a capturar por fase, y las 2 lecciones aprendidas | ¿Está bien descompuesta? ¿Qué fases sobran o faltan para que esto sea **repetible en un día por cliente** en vez de cinco? |
+
+**Notas de sanitización:** los identificadores del cliente, del hosting, de la
+agencia web y de los ~20 terceros que aparecieron en el certificado compartido
+fueron reemplazados por placeholders estables (`[CLIENTE]`, `[AGENCIA]`,
+`[IP-SERVIDOR]`, `[URL-APPSCRIPT]`, `[USUARIO-1]`, `[MARCA-COLATERAL-N]`, etc.).
+**El contenido técnico no se tocó: los CVE, los CVSS, los OWASP, los WSTG, los
+artículos de ley, los tickets, los IDs del registro, los comandos de reproducción
+y las versiones de software están completos.** Si algo que necesitas no está,
+dilo — no lo infieras.
+
+---
+
+# LO QUE TIENES QUE HACER
+
+**Paso 1 — Bloque A (factual).** Antes de nada, verifica afirmaciones concretas:
+
+1. ¿El rango de versiones afectadas de CVE-2026-87902 es correcto contra la fuente
+   oficial? ¿Qué se me escapa del precondition que el advisory menciona?
+2. ¿CVE-2026-109618/-109619 son los mismos que la prensa llama "PHP2Shell"?
+   ¿Alguna discrepancia entre el advisory de php.net y los medios?
+3. ¿Mi cadena de DMARC es correcta? SPF `~all` + DKIM en un selector + sin
+   registro DMARC → ¿puede un atacante enviar correo con el `From:` visible del
+   cliente y que los receptores no tengan instrucción de actuar? ¿Estoy
+   simplificando de más el alineamiento (relaxed vs strict) o el comportamiento
+   de Gmail/Outlook?
+4. ¿320,000 UMA × $117.31 = $37,539,200 (art. 59 fr. III), duplicado para datos
+   sensibles (fr. IV)? **¿El "doble" aplica al mismo supuesto de hecho o son
+   infracciones distintas que estoy fundiendo en una sola fila?**
+5. ¿El art. 19 realmente obliga a notificar **a los pacientes** de inmediato, y la
+   obligación de notificar a la autoridad con 30 días de la ley de 2010 ya no
+   existe? ¿El Reglamento pendiente podría reintroducirla?
+6. ¿La LGS art. 83 aplica a un sitio web por ser "publicidad"? **Es el argumento
+   más fuerte de mi sección legal y necesito saber si es sólido o si estoy
+   estirando la norma.**
+7. ¿Citar la cifra regional de América Latina como si fuera México es defendible
+   frente a un cliente, o debería quitarlo?
+
+**Paso 2 — Bloques B a F.** Uno por mensaje:
+
+- **B · Coherencia.** ¿El teaser y el informe se contradicen en algún número o
+  afirmación? ¿Hay hallazgos del informe que el teaser nunca menciona y que
+  deberían? Si el cliente siente que le escondimos material, la reunión se cae.
+- **C · Juicios de riesgo.** ¿ICE es lo correcto sin línea base de tráfico?
+  ¿L×I es adecuado (el impacto debería pesar más que la probabilidad)?
+  ¿El RR/hr me está haciendo priorizar mal? ¿Los 12 ítems 🔒 son realmente no
+  accionables por el cliente? ¿Qué riesgos no registré — exposure vía el CRM y
+  terceros, suplantación en Google Business Profile, ingeniería social contra el
+  personal, o compromiso de la agencia web como vía indirecta?
+- **D · Calidad de la evidencia.** ¿Es suficiente lo que presento? En concreto:
+  mi prueba de que la caché sirve 404 con 200 — ¿es concluyente o necesita otra
+  observación? Mi afirmación de "cero rastreadores y cero cookies" es una buena
+  noticia, pero **también significa que no hay medición de ningún tipo** —
+  ¿estoy diciendo "no pierden nada por no medir" y "les urge medir" al mismo
+  tiempo? ¿Hay inconsistencia ahí?
+- **E · Comercial.** ¿Es esto convincente para un dueño de clínica? ¿Dónde perdería
+  interés o se sentiría engañado? ¿La §legal asusta de más? ¿El costo de brecha
+  enterprise se sostiene o se ve inflado? ¿Los precios se entienden en 10
+  segundos? ¿Hay riesgo de que solo quieran el nivel 1 barato y se lleven el
+  detalle técnico por $8,000? **¿Subo a $12,000?**
+- **F · Lo que no sé.** ¿Qué superficie técnica no audité? ¿Qué marco me estoy
+  perdiendo (OWASP ASVS, PTES, NIST SP 800-115)? ¿Qué ángulo legal mexicano no
+  toqué? **¿Qué le haría a esta línea base para volverla repetible?**
+
+**Paso 3 — Follow-ups.** Cuando termines:
+
+1. ¿Cuáles son los **tres** cambios que harías antes de enviarle esto al cliente?
+   Ordénalos por daño que evitan.
+2. ¿Hay algo que hice **demasiado bien** y que debería simplificar? Estoy pagando
+   el costo de un proceso que un consultor independiente no necesitaría.
+3. Si fueras el cliente y recibieras esto, **¿qué te haría desconfiar?**
+4. **¿Qué le preguntarías al cliente en la reunión que no aparece en ninguno de
+   mis documentos?**
+
+---
+
+# REGLAS DE FORMATO DE TU RESPUESTA
+
+- **Cita la ubicación exacta** para cada observación: sección, ID de hallazgo
+  (P1–P6, S1–S7, W1–W11, E1–E9, L1–L6), línea o página.
+- **Separa lo que es error mío de lo que es diferencia de criterio.** Son cosas
+  distintas y las necesito separadas.
+- **Si no puedes verificar algo con lo que te di, dilo explícitamente** en vez de
+  suponerlo. "No lo puedo verificar con estos artefactos" es una respuesta
+  válida y preferible a una inventada.
+- **No propongas reescribir el documento entero.** Quiero observaciones accionables.
+- **Si algo que afirmo es correcto, no lo elabores.** Una línea y sigues.
+- Prioriza por impacto sobre la decisión, no por completitud.
+- Si algo de mi marco legal te parece forzado, **dilo sin suavizar**. Preferible
+  que me lo corrija un LLM que un cliente.
+
+---
+
+# SEGURIDAD DE ESTA REVISIÓN
+
+- **No intentes recuperar datos del cliente.** Los identificadores ya fueron
+  reemplazados por placeholders. Si necesitas un valor concreto paraevaluar algo,
+  **dilo y pido el dato**, no lo infieras ni lo busques en internet.
+- **No contactes a ningún host, dominio o servicio mencionado.** Todo es lectura
+  de artefactos que ya te entrego.
+- Si encuentras algo que **no debería estar en el sanitizado**, señálalo
+  explícitamente: es un fallo de mi proceso de redacción y necesito saberlo.
+
+---
+
+Empieza con el **Bloque A**. Antes de responder, confirma que viste los 3
+archivos y cuál es cada uno.

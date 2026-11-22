@@ -1,0 +1,53 @@
+MIT License
+
+Copyright (c) 2026 Francisco Moreno
+
+===============================================================================
+NOTA SOBRE EL ALCANCE DE ESTA LICENCIA
+-------------------------------------------------------------------------------
+Este repositorio tiene DOS licencias. Lee esta nota antes de usar nada.
+
+1. CÓDIGO (MIT, esta licencia)
+   Todo lo que es código fuente se licencia bajo MIT:
+     - 01-tooling/scripts/**            (los 7 scripts de Python)
+     - 01-tooling/scripts/tests/**       (selftest.py, check_links.py, fixtures/)
+     - 02-plantillas/teaser-report/*.py  (build.py, make-charts.py, verify.py)
+     - .github/workflows/**              (la CI)
+
+2. DOCUMENTACIÓN Y METODOLOGÍA (CC BY-NC-ND 4.0)
+   Los documentos y las plantillas se ofrecen bajo Creative Commons
+   Attribution-NonCommercial-NoDerivatives 4.0 International:
+     - 00-metodologia/**
+     - 02-plantillas/**
+     - 04-formacion/**
+     - 05-plantillas-de-trabajo/**   (las plantillas de trabajo)
+   El texto completo y canónico de esa licencia está en LICENSE-DOCS.md
+   y en https://creativecommons.org/licenses/by-nc-nd/4.0/deed.es
+
+   CC BY-NC-ND 4.0 permite: copiar y redistribuir el material, siempre que
+   se atribuya al autor, NO se use con fines comerciales y NO se modifique
+   ni se publiquen obras derivadas.
+
+   El objetivo de esta separación es deliberado: que la metodología y los
+   documentos puedan circular y ser usados por otros profesionales y por
+   clientes, sin que otro proveedor pueda vender el servicio con este
+   material como su propio.
+===============================================================================
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

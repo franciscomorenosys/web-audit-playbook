@@ -1,0 +1,28 @@
+# ---------------------------------------------------------------------------
+#  Opciones de financiación de Web Audit Playbook.
+# ---------------------------------------------------------------------------
+#  El proyecto es abierto: el código es MIT y la metodología es CC BY-NC-ND.
+#  Si en algún momento hay una vía de financiación (patrocinio,GitHub Sponsors,
+#  najcorp...), se activa aquí y GitHub muestra el botón «Sponsor» en el
+#  repositorio. Mientras tanto, el fichero está presente pero sin plataformas
+#  activas: es el estado por defecto cuando la lista está vacía.
+#
+#  Referencia: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/enabling-sponsored-button
+# ---------------------------------------------------------------------------
+
+# platforms:
+#   - github
+#   - patreon
+#   - open_collective
+#   - ko_fi
+#   - tidelift
+#   - community_bridge
+#   - liberapay
+#   - issuehunt
+#   - lfx_mentorship
+#   - polar
+#   - buy_me_a_coffee
+#   - thanks_dev
+#   - custom: ["https://tu-donacion.example"]
+#
+# username: francismorenosys

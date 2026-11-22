@@ -1,0 +1,27 @@
+{
+  "expediente": "EXP-2024-00123",
+  "paciente": {
+    "nombre": "María Fernanda López Ramírez",
+    "apellido": "López Ramírez",
+    "fecha_nacimiento": "1987-04-12",
+    "curp": "LORM870412MDFRPN08",
+    "rfc": "LOMR870412HDFRPN08",
+    "nss": "12345678901",
+    "email": "maria.lopez@example.mx",
+    "telefono": "+52 55 1234 5678",
+    "direccion": "Calle Reforma 222, Col. Juárez, CDMX",
+    "diagnostico": "Trastorno de ansiedad generalizada",
+    "ip": "189.203.45.67"
+  },
+  "pago": {
+    "tarjeta": "4111111111111111",
+    "metodo": "tarjeta",
+    "referencia": "REF-99881"
+  },
+  "notas": "Paciente contactado al 55 1234 5678 el 12/04/2026 para recordatorio.",
+  "contacto_emergencia": {
+    "nombre": "Jorge Ramírez Soto",
+    "telefono": "55 9876 5432",
+    "email": "jorge.ramirez@example.mx"
+  }
+}

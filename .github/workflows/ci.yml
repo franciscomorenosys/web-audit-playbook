@@ -1,0 +1,118 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# La CI nunca necesita escribir en el repositorio.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  comprobaciones:
+    name: Comprobaciones del toolkit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - name: Copiar el repositorio
+        uses: actions/checkout@v7
+
+      - name: Preparar Python 3.13
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Mostrar la versión
+        run: python3 --version
+
+      # (a) Todos los scripts deben compilar. Sin `pip install`: el toolkit
+      #     es Python stdlib y no puede depender de nada externo.
+      - name: Compilar todos los scripts (py_compile)
+        run: |
+          set -euo pipefail
+          find_scripts() {
+            find . \
+              -name '*.py' \
+              -not -path '*/.venv/*' \
+              -not -path '*/03-casos/*' \
+              -not -path '*/__pycache__/*' \
+              -not -path '*/node_modules/*'
+          }
+          count=$(find_scripts | wc -l)
+          echo "Compilando ${count} script(s)"
+          find_scripts -print0 | xargs -0 python3 -m py_compile
+          echo "OK: ${count} script(s) compilan."
+
+      # (b) Auto-prueba del toolkit. 14 checks y NINGUNA llamada de red:
+      #     el propio selftest bloquea los sockets para comprobarlo.
+      - name: Auto-prueba (selftest)
+        run: python3 01-tooling/scripts/tests/selftest.py
+
+      # (c) Los enlaces relativos del README y del resto del Markdown deben
+      #     resolver — incluidos los que apuntan a algo que está en el
+      #     .gitignore, que para quien clona el repo están rotos.
+      - name: Comprobar los enlaces relativos
+        run: python3 01-tooling/scripts/tests/check_links.py
+
+      # Puerta de seguridad #1: el escáner propio. Lee la allowlist de
+      # secretos sintéticos del `.gitleaks.toml` de la raíz, así que lo que
+      # sale de aquí es real. `--fail-on medio` bloquea el push si aparece
+      # una credencial (o una asignación genérica tipo `password = ...`).
+      - name: Escaneo de secretos (secrets_scan.py)
+        run: |
+          set -uo pipefail
+          python3 01-tooling/scripts/secrets_scan.py . \
+            --json --out secret_scan_ci.json --fail-on medio > /dev/null
+          estado=$?
+          python3 - <<'PY'
+          import json, pathlib
+          data = json.loads(pathlib.Path("secret_scan_ci.json").read_text())
+          resumen = data["summary"]
+          print(f"[secrets_scan] {resumen['total']} hallazgo(s) en "
+                f"{data['files_scanned']} fichero(s)")
+          print(f"[secrets_scan] por severidad: {resumen['by_severity']}")
+          print("[secrets_scan] Los valores de ejemplo son SINTÉTICOS "
+                "(fixtures de test y ejemplos documentados) y están "
+                "declarados en .gitleaks.toml.")
+          PY
+          rm -f secret_scan_ci.json
+          exit $estado
+
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      # Necesario sólo para que la action pueda comentar en el PR.
+      pull-requests: write
+
+    steps:
+      - name: Copiar el repositorio
+        uses: actions/checkout@v7
+        with:
+          # Se necesita el histórico completo para que gitleaks rastree los
+          # secretos en todos los commits, no sólo en el último.
+          fetch-depth: 0
+
+      # Action oficial de Gitleaks. En una cuenta personal no hace falta
+      # licencia (GITLEAKS_LICENSE sólo es obligatorio para organizaciones).
+      # La configuración del repo (.gitleaks.toml) se detecta sola; además se
+      # pasa explícitamente por GITLEAKS_CONFIG.
+      - name: Buscar secretos con gitleaks
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: true
+          GITLEAKS_ENABLE_SUMMARY: true

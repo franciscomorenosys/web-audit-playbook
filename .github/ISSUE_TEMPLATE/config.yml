@@ -1,0 +1,31 @@
+# ---------------------------------------------------------------------------
+#  Configuración de las plantillas de issue de Web Audit Playbook.
+# ---------------------------------------------------------------------------
+#  El aviso de abajo aparece en el selector de plantillas, ANTES de que
+#  nadie escriba nada: es la primera línea que ve quien abre un issue.
+# ---------------------------------------------------------------------------
+
+blank_issues_enabled: false
+
+contact_links:
+  - name: "⚠️ Aviso: no auditamos sin autorización escrita"
+    url: https://github.com/franciscomorenosys/web-audit-playbook/blob/main/SECURITY.md
+    about: >-
+      **No auditamos, pentesteamos ni exploramos sistemas de información sin
+      autorización escrita del propietario. RoE y addendum firmados antes de
+      cualquier prueba.** Un issue no es un encargo: este repositorio es la
+      metodología y el toolkit, no una vía para encargar una auditoría ni
+      para pedir que se pruebe un sistema. Lee la política antes de abrir.
+
+  - name: "🔐 Reportar una vulnerabilidad (privado)"
+    url: https://github.com/franciscomorenosys/web-audit-playbook/security/advisories/new
+    about: >-
+      Vulnerabilidades del toolkit: fuga de secretos, salto del allowlist del
+      `scope_guard.py` o redacción incompleta de PII. Se abre en privado y se
+      responde en 48 h.
+
+  - name: "📄 Consultas sobre la licencia (MIT / CC BY-NC-ND 4.0)"
+    url: https://github.com/franciscomorenosys/web-audit-playbook/issues/new?labels=necesita-decision&title=Licencia%3A%20consulta
+    about: >-
+      Dudas sobre el alcance de MIT para el código y de CC BY-NC-ND 4.0 para
+      la metodología y las plantillas. Etiqueta: necesita-decision.

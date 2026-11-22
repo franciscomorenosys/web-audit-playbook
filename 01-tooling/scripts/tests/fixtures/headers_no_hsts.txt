@@ -1,0 +1,16 @@
+########## FULL HEADERS: https://www.ejemplo-auditoria.mx/ (GET, headers only) ##########
+HTTP/2 200
+date: Thu, 22 Oct 2026 06:57:45 GMT
+server: nginx/1.22.1
+content-type: text/html; charset=UTF-8
+x-powered-by: PHP/8.0.30
+x-runtime: 0.412
+via: 1.1 varnish
+content-length: 1234
+set-cookie: sessionid=abc123def456; Path=/; HttpOnly
+set-cookie: tracking=xyz987; Path=/
+access-control-allow-origin: *
+access-control-allow-credentials: true
+vary: Accept-Encoding
+x-cache: MISS
+

@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<title>Evaluación de Seguridad y Riesgos Digitales — Clínica Dental Easy</title>
+<link rel="stylesheet" href="assets/fonts.css">
+<style>
+/* ============================================================
+   Evaluación de Seguridad y Riesgos Digitales
+   Documento preparatorio — resumen ejecutivo
+   Clínica Dental Easy
+   ============================================================ */
+
+:root{
+  --navy:      #16232F;
+  --slate:     #33424F;
+  --body:      #3B4A57;
+  --muted:     #7A8894;
+  --faint:     #9AA6B1;
+  --hairline:  #DCE2E7;
+  --hairline-2:#EDF1F4;
+  --paper:     #FFFFFF;
+  --tint:      #F6F8F9;
+
+  /* única rampa de acento: riesgo, ámbar -> rojo */
+  --crit:      #9E1F1F;
+  --alto:      #B4551B;
+  --medio:     #B08123;
+  --bajo:      #5C7794;
+  --ok:        #2F6B4F;
+
+  --serif: 'IBM Plex Serif', 'Iowan Old Style', Georgia, serif;
+  --sans:  'Inter', -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+@page{
+  size: A4;
+  margin: 20mm 18mm 18mm 18mm;
+}
+
+*{ box-sizing:border-box; }
+
+html{
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+body{
+  margin:0;
+  background: var(--paper);
+  color: var(--body);
+  font-family: var(--sans);
+  font-size: 10.4pt;
+  line-height: 1.62;
+  font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------- marca de confidencial, se repite en cada página ---------- */
+.watermark{
+  position: fixed;
+  top: 44%;
+  left: 0; right: 0;
+  text-align:center;
+  font-family: var(--sans);
+  font-size: 44pt;
+  font-weight: 700;
+  letter-spacing: .26em;
+  color: var(--navy);
+  opacity: .022;
+  transform: rotate(-22deg);
+  pointer-events:none;
+  z-index: 0;
+}
+.page > *:not(.watermark){ position:relative; z-index:1; }
+
+/* ============================================================
+   PORTADA
+   ============================================================ */
+.cover{
+  min-height: 247mm;
+  display:flex;
+  flex-direction:column;
+  page-break-after: always;
+}
+.cover-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  padding-bottom: 14mm;
+}
+.logomark{
+  width: 38mm; height: 15mm;
+  border: .7pt solid var(--hairline);
+  border-radius: 1mm;
+  display:flex; align-items:center; justify-content:center;
+  color: var(--faint);
+  font-size: 7.2pt;
+  letter-spacing: .18em;
+  font-weight: 500;
+  text-align:center;
+  line-height:1.5;
+}
+.cover-meta{
+  text-align:right;
+  font-size: 8.2pt;
+  color: var(--muted);
+  line-height: 1.85;
+  letter-spacing:.02em;
+}
+.cover-meta strong{ color: var(--slate); font-weight:600; }
+
+.rule{ height:.9pt; background: var(--navy); }
+.rule--hair{ height:.6pt; background: var(--hairline); }
+
+.eyebrow{
+  font-size: 8.1pt;
+  font-weight: 600;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 7mm;
+}
+.cover h1{
+  font-family: var(--serif);
+  font-size: 33pt;
+  line-height: 1.16;
+  font-weight: 600;
+  color: var(--navy);
+  margin: 0 0 6mm;
+  letter-spacing: -.012em;
+  max-width: 148mm;
+}
+.cover-client{
+  font-family: var(--serif);
+  font-size: 17pt;
+  font-weight: 500;
+  color: var(--slate);
+  margin: 0 0 12mm;
+  letter-spacing: -.005em;
+}
+.cover-lead{
+  font-size: 11.4pt;
+  line-height:1.62;
+  color: var(--body);
+  max-width: 122mm;
+  margin: 0 0 11mm;
+}
+.cover-lead strong{ color: var(--navy); font-weight:600; }
+
+.kpi-row{ display:flex; gap: 0; margin: 0 0 11mm; }
+.kpi{
+  flex:1;
+  padding: 5.5mm 6mm 5mm 0;
+  border-top: 2.2pt solid var(--navy);
+}
+.kpi + .kpi{ padding-left: 6mm; border-left:.6pt solid var(--hairline); }
+.kpi-n{
+  font-family: var(--serif);
+  font-size: 21.5pt;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--navy);
+  line-height:1;
+  display:block;
+  margin-bottom: 2.2mm;
+}
+.kpi-l{
+  font-size: 8.1pt;
+  line-height:1.45;
+  color: var(--muted);
+  letter-spacing:.015em;
+  display:block;
+}
+
+.cover-foot{
+  margin-top: auto;
+  padding-top: 8mm;
+  border-top: .6pt solid var(--hairline);
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap: 10mm;
+}
+.cover-note{
+  font-size: 8.6pt;
+  line-height:1.6;
+  color: var(--muted);
+  max-width: 108mm;
+}
+.cover-stamp{
+  font-size: 7.6pt;
+  letter-spacing:.15em;
+  text-transform: uppercase;
+  color: var(--crit);
+  border: .8pt solid var(--crit);
+  border-radius: .8mm;
+  padding: 2.2mm 4mm;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+/* ============================================================
+   ESTRUCTURA
+   ============================================================ */
+.page{ page-break-after: auto; }
+.page + .page{ page-break-before: auto; }
+/* encabezados de sección: no deben quedar huérfanos al pie de página */
+.sec-head{ page-break-inside: avoid; break-inside: avoid;
+          page-break-after: avoid; break-after: avoid; }
+h2.sec{ page-break-after: avoid; break-after: avoid; }
+h3{ page-break-after: avoid; break-after: avoid; }
+figure, .callout, .panel, .risk-row, .strength, .cta,
+.tier, table, .matrix, .legend, .booking{ page-break-inside: avoid; break-inside: avoid; }
+thead{ display: table-header-group; }
+
+h2.sec{
+  font-family: var(--serif);
+  font-size: 15.5pt;
+  font-weight: 600;
+  color: var(--navy);
+  margin: 0 0 1.6mm;
+  letter-spacing: -.008em;
+  line-height:1.28;
+}
+.sec-num{
+  display:block;
+  font-family: var(--sans);
+  font-size: 7.8pt;
+  font-weight: 600;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2.4mm;
+}
+h2.sec + .sec-lede{
+  font-size: 10.9pt;
+  line-height:1.58;
+  color: var(--slate);
+  margin: 0 0 6.5mm;
+  max-width: 150mm;
+}
+h3{
+  font-size: 10.2pt;
+  font-weight: 600;
+  color: var(--navy);
+  margin: 7mm 0 2.6mm;
+  letter-spacing:.005em;
+}
+h3:first-child{ margin-top: 0; }
+
+p{ margin: 0 0 3.6mm; }
+p:last-child{ margin-bottom: 0; }
+strong{ color: var(--navy); font-weight: 600; }
+em{ font-style: italic; }
+
+ul.clean{ margin: 0 0 4mm; padding-left: 4.6mm; list-style: none; }
+ul.clean > li{
+  position: relative;
+  padding-left: 5.2mm;
+  margin-bottom: 2.4mm;
+}
+ul.clean > li::before{
+  content: '';
+  position:absolute; left:0; top: 2.05mm;
+  width: 2.1mm; height: .7pt; background: var(--faint);
+}
+
+.lede{ font-size: 11pt; color: var(--slate); line-height:1.6; }
+
+/* ---------- tablas ---------- */
+table{
+  width:100%;
+  border-collapse: collapse;
+  margin: 0 0 5mm;
+  font-size: 9.3pt;
+}
+caption{
+  caption-side: top;
+  text-align:left;
+  font-size: 8.2pt;
+  font-weight: 600;
+  letter-spacing:.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-bottom: 2.6mm;
+}
+th{
+  text-align:left;
+  font-size: 8.1pt;
+  font-weight: 600;
+  letter-spacing:.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 4mm 2.4mm 0;
+  border-bottom: .9pt solid var(--navy);
+  vertical-align: bottom;
+}
+td{
+  padding: 3.1mm 4mm 3.1mm 0;
+  border-bottom: .5pt solid var(--hairline);
+  vertical-align: top;
+  line-height: 1.52;
+}
+tr:last-child td{ border-bottom: .5pt solid var(--hairline); }
+.num{ text-align:right; padding-right:4mm; font-variant-numeric: tabular-nums; }
+td.num:last-child, th.num:last-child{ padding-right:0; }
+.nowrap{ white-space: nowrap; }
+th.num{ text-align:right; }
+tbody tr.total td{
+  border-top: .9pt solid var(--navy);
+  border-bottom: none;
+  font-weight: 600;
+  color: var(--navy);
+  padding-top: 2.8mm;
+}
+
+/* ---------- chips de severidad ---------- */
+.chip{
+  display:inline-block;
+  font-size: 7.4pt;
+  font-weight: 600;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  padding: .85mm 2.3mm;
+  border-radius: 3mm;
+  white-space: nowrap;
+  line-height: 1.35;
+}
+.chip--crit { background:#F6E6E6; color:#8A1B1B; box-shadow: inset 0 0 0 .5pt #D9AFAF; }
+.chip--alto { background:#F8EBE1; color:#8F4315; box-shadow: inset 0 0 0 .5pt #E0BE9F; }
+.chip--medio{ background:#F7F0DC; color:#7E5D18; box-shadow: inset 0 0 0 .5pt #DCC894; }
+.chip--bajo { background:#E9EFF4; color:#415A73; box-shadow: inset 0 0 0 .5pt #B9C8D6; }
+.chip--ok   { background:#E6F0EA; color:#255540; box-shadow: inset 0 0 0 .5pt #A9C9B8; }
+.chip--navy { background:#E8ECF0; color:#22323F; box-shadow: inset 0 0 0 .5pt #C3CDD6; }
+
+/* ---------- callouts ---------- */
+.callout{
+  border-left: 2.2pt solid var(--navy);
+  background: var(--tint);
+  padding: 4.2mm 5mm 4mm 4.6mm;
+  margin: 0 0 5mm;
+  font-size: 9.6pt;
+  line-height: 1.56;
+}
+.callout--risk{ border-left-color: var(--crit); background:#FBF5F5; }
+.callout--ok  { border-left-color: var(--ok);   background:#F4F8F5; }
+.callout p:last-child{ margin-bottom: 0; }
+.callout-title{
+  display:block;
+  font-size: 8.1pt;
+  font-weight: 600;
+  letter-spacing:.13em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2.2mm;
+}
+
+/* ---------- rejillas ---------- */
+.grid-2{ display:flex; gap: 7mm; }
+.grid-2 > *{ flex:1; min-width:0; }
+
+.panel{
+  border: .5pt solid var(--hairline);
+  border-radius: 1mm;
+  padding: 4.4mm 5mm;
+}
+.panel--tint{ background: var(--tint); border-color: var(--hairline-2); }
+.panel h4{
+  font-size: 8.3pt;
+  font-weight: 600;
+  letter-spacing:.13em;
+  text-transform: uppercase;
+  color: var(--navy);
+  margin: 0 0 2.8mm;
+}
+.panel p{ font-size: 9.4pt; line-height:1.55; }
+
+/* ---------- figuras ---------- */
+figure{ margin: 0 0 5.5mm; page-break-inside: avoid; break-inside: avoid; }
+figure img{ display:block; width:100%; height:auto; }
+figcaption{
+  font-size: 8.1pt;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: 2.8mm;
+  padding-top: 2.4mm;
+  border-top: .5pt solid var(--hairline);
+}
+figcaption b{ color: var(--slate); font-weight:600; }
+
+/* ---------- matriz de dominios ---------- */
+.matrix{ width:100%; border-collapse:separate; border-spacing:0; margin: 0 0 5mm; }
+.matrix th{
+  border-bottom: .9pt solid var(--navy);
+  padding-bottom: 2.4mm;
+  vertical-align:bottom;
+}
+.matrix td{
+  border-bottom: .5pt solid var(--hairline);
+  padding: 2.9mm 3mm 2.9mm 0;
+  font-size: 9.4pt;
+}
+.matrix tr:last-child td{ border-bottom: .5pt solid var(--hairline); }
+.matrix .dom{ font-weight:500; color: var(--navy); width: 33%; }
+.matrix .desc{ color: var(--body); font-size: 9pt; line-height:1.45; width: 45%; }
+.cell{
+  display:inline-flex;
+  align-items:center;
+  gap: 1.8mm;
+  font-size: 7.6pt;
+  font-weight: 600;
+  letter-spacing:.07em;
+  text-transform: uppercase;
+  padding: 1.1mm 2.6mm;
+  border-radius: 3mm;
+  white-space:nowrap;
+}
+.dot{ width:2.2mm; height:2.2mm; border-radius:50%; flex:none; }
+.dot--red { background: var(--crit); }
+.dot--amber{ background: var(--medio); }
+.dot--green{ background: var(--ok); }
+
+.legend{
+  display:flex;
+  gap: 6mm;
+  flex-wrap: wrap;
+  font-size: 8.2pt;
+  color: var(--muted);
+  padding: 3mm 0 0;
+}
+.legend span{ display:inline-flex; align-items:center; gap:1.8mm; }
+
+/* ---------- Bloques de riesgo (áreas expuestas) ---------- */
+.risk-row{
+  display:flex;
+  gap: 5mm;
+  align-items:flex-start;
+  padding: 3.6mm 0;
+  border-bottom: .5pt solid var(--hairline);
+  page-break-inside: avoid;
+}
+.risk-row:last-child{ border-bottom: none; }
+.risk-idx{
+  font-family: var(--serif);
+  font-size: 13pt;
+  font-weight: 600;
+  color: var(--hairline);
+  line-height:1;
+  flex:none;
+  width: 8mm;
+  padding-top:.6mm;
+}
+.risk-body{ flex:1; min-width:0; }
+.risk-head{
+  display:flex;
+  align-items:baseline;
+  gap: 3mm;
+  margin-bottom: 1.6mm;
+  flex-wrap: wrap;
+}
+.risk-head strong{
+  font-size: 10.4pt;
+  color: var(--navy);
+  font-weight:600;
+}
+.risk-body p{ font-size: 9.6pt; line-height:1.56; color: var(--body); margin:0; }
+
+/* ---------- Fortalezas ---------- */
+.strength{
+  display:flex;
+  gap: 4mm;
+  padding: 3.4mm 0;
+  border-bottom: .5pt solid var(--hairline);
+  page-break-inside: avoid;
+}
+.strength:last-child{ border-bottom:none; }
+.strength-mark{
+  flex:none; width:5mm; padding-top:.4mm;
+}
+.strength-mark span{
+  display:inline-block; width:3mm; height:3mm;
+  border-radius:50%; background: var(--ok);
+}
+.strength-body{ flex:1; }
+.strength-body strong{ display:block; font-size:10pt; margin-bottom:.9mm; }
+.strength-body p{ font-size:9.5pt; line-height:1.55; margin:0; color:var(--body); }
+
+/* ---------- Oferta / precios ---------- */
+.tiers{ display:flex; gap: 4mm; margin: 0 0 4mm; align-items: stretch; }
+.tier{
+  flex:1;
+  border: .5pt solid var(--hairline);
+  border-radius: 1mm;
+  padding: 5mm 4.6mm 5mm;
+  display:flex; flex-direction:column;
+  page-break-inside: avoid;
+  background: var(--paper);
+}
+.tier--featured{
+  border: 1pt solid var(--navy);
+  background: var(--tint);
+  padding-top: 5mm;
+}
+.tier-flag{
+  font-size: 7.2pt;
+  font-weight: 600;
+  letter-spacing:.12em;
+  text-transform: uppercase;
+  color: var(--crit);
+  margin-bottom: 2.6mm;
+  display:block;
+  min-height: 3.4mm;
+}
+.tier--featured .tier-flag{ color: var(--navy); }
+.tier-name{
+  font-family: var(--serif);
+  font-size: 13pt;
+  font-weight: 600;
+  color: var(--navy);
+  line-height:1.2;
+  margin-bottom: 2.2mm;
+}
+.tier-price{
+  font-family: var(--serif);
+  font-size: 15.5pt;
+  font-weight: 600;
+  color: var(--navy);
+  line-height:1.1;
+  margin-bottom: .8mm;
+}
+.tier-price small{
+  font-family: var(--sans);
+  font-size: 8pt;
+  font-weight: 500;
+  color: var(--muted);
+  display:block;
+  margin-top: 1.4mm;
+  letter-spacing:.01em;
+}
+.tier ul{ margin: 3.4mm 0 0; padding:0; list-style:none; }
+.tier li{
+  font-size: 8.9pt;
+  line-height: 1.5;
+  color: var(--body);
+  padding: 1.5mm 0 1.5mm 4.2mm;
+  border-top: .5pt solid var(--hairline);
+  position: relative;
+}
+.tier li:first-child{ border-top:none; }
+.tier li::before{
+  content:''; position:absolute; left:0; top:2.75mm;
+  width:2mm; height:.6pt; background: var(--faint);
+}
+.tier-scope{
+  margin-top: auto;
+  padding-top: 3.4mm;
+  font-size: 7.9pt;
+  color: var(--muted);
+  letter-spacing:.02em;
+}
+
+/* ---------- CTA ---------- */
+.cta{
+  border: .9pt solid var(--navy);
+  border-radius: 1mm;
+  padding: 7mm 7mm 6mm;
+  margin-bottom: 5mm;
+}
+.cta-h{
+  font-family: var(--serif);
+  font-size: 15pt;
+  font-weight: 600;
+  color: var(--navy);
+  margin: 0 0 3mm;
+  line-height:1.28;
+}
+.booking{
+  margin-top: 5mm;
+  border: .8pt dashed var(--faint);
+  border-radius: 1mm;
+  padding: 5mm;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 6mm;
+}
+.booking-l{
+  font-size: 8pt;
+  font-weight:600;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color: var(--muted);
+  margin-bottom: 1.6mm;
+}
+.booking-v{ font-size: 10.4pt; color: var(--slate); font-weight:500; }
+.booking-slot{
+  font-size: 8.6pt;
+  color: var(--faint);
+  border: .6pt solid var(--hairline);
+  border-radius: 3mm;
+  padding: 2mm 3.4mm;
+  white-space: nowrap;
+}
+
+/* ---------- Fuentes ---------- */
+.fuentes{ font-size: 8.6pt; line-height:1.6; color: var(--body); }
+.fuentes li{
+  padding-left: 4.6mm;
+  position: relative;
+  margin-bottom: 2.6mm;
+  list-style:none;
+}
+.fuentes{ margin:0; padding:0; }
+.fuentes li::before{
+  content:''; position:absolute; left:0; top:1.85mm;
+  width:2mm; height:.6pt; background: var(--faint);
+}
+.fuentes b{ color: var(--navy); font-weight:600; }
+.src-tag{
+  display:inline-block;
+  font-size: 7.4pt;
+  color: var(--muted);
+  letter-spacing:.04em;
+  margin-left: 1.6mm;
+  white-space:nowrap;
+}
+
+.note{
+  font-size: 8.5pt;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.note strong{ color: var(--slate); font-weight:600; }
+
+/* ---------- utilidades ---------- */
+.mt-0{ margin-top:0; }
+.mb-0{ margin-bottom:0; }
+.mb-l{ margin-bottom: 7mm; }
+.tight td, .tight th{ padding-top:2.4mm; padding-bottom:2.4mm; }
+.no-break{ page-break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<div class="watermark">CONFIDENCIAL</div>
+
+<!-- ================================================================
+     PORTADA
+     ================================================================ -->
+<section class="cover">
+  <div class="cover-top">
+    <div class="logomark">ESPACIO RESERVADO<br>PARA LOGOTIPO</div>
+    <div class="cover-meta">
+      <strong>Clínica Dental Easy</strong><br>
+      Documento preparatorio — resumen ejecutivo<br>
+      22 de octubre de 2026
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div style="margin-top:26mm;">
+    <p class="eyebrow">Revisión externa · Alcance estratégico</p>
+    <h1>Evaluación de Seguridad y Riesgos Digitales</h1>
+    <p class="cover-client">Clínica Dental Easy</p>
+
+    <p class="cover-lead">
+      Este documento resume hallazgos a nivel estratégico. El detalle técnico
+      se comparte en sesión.
+    </p>
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <span class="kpi-n">6</span>
+        <span class="kpi-l">Dominios evaluados<br>de presencia digital</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-n">39</span>
+        <span class="kpi-l">Hallazgos registrados<br>en total</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-n">11</span>
+        <span class="kpi-l">Hallazgos<br>de severidad crítica</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-n">$37.5 M</span>
+        <span class="kpi-l">Multa máxima<br>por infracción (MXN)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cover-foot">
+    <p class="cover-note">
+      Elaborado a partir de una revisión pasiva y no intrusiva de la
+      exposición pública de la clínica. No se accedió a sistemas internos ni
+      a información de pacientes, y no se modificó configuración alguna.
+    </p>
+    <span class="cover-stamp">Documento confidencial</span>
+  </div>
+</section>
+
+
+<!-- ================================================================
+     §1  ALCANCE
+     ================================================================ -->
+<section class="page">
+  <div class="sec-head">
+  <span class="sec-num">Sección 01</span>
+  <h2 class="sec">Alcance de la revisión</h2>
+  <p class="sec-lede">
+    Antes de hablar de resultados, conviene hablar de cómo se obtuvieron.
+    La metodología es la parte más importante de este documento: define
+    qué se puede afirmar y qué no.
+  </p>
+  </div>
+
+  <h3>Qué hicimos</h3>
+  <p>
+    Observamos, desde fuera, lo que cualquier persona o programa automatizado
+    puede ver de la clínica en internet. Revisamos los seis dominios que un
+    paciente, un competidor o un atacante encontrarían hoy mismo: lo que el
+    sitio expone, cómo se protegen los datos del paciente, cómo funciona el
+    correo institucional, en qué está alojada la operación, qué tan íntegro es
+    el sitio y qué tanto cumple la clínica con la normatividad mexicana
+    aplicable.
+  </p>
+
+  <div class="grid-2 mb-l">
+    <div class="panel">
+      <h4>Lo que la revisión no costó</h4>
+      <p>
+        Nada. No hubo cuota, no hubo licencia, no hubo herramienta comprada
+        para este ejercicio. La revisión se realizó sobre la exposición pública
+        de la clínica, que es información que el público puede obtener sin
+        pedir permiso.
+      </p>
+    </div>
+    <div class="panel">
+      <h4>Lo que la revisión no cambió</h4>
+      <p>
+        Nada. Fue una revisión pasiva: no se intentó entrar a ningún sistema,
+        no se desactivó ningún servicio y no se modificó
+        configuración alguna. La clínica puede seguir operando exactamente
+        como operaba ayer.
+      </p>
+    </div>
+  </div>
+
+  <h3>Condiciones de la revisión</h3>
+  <table class="tight">
+    <caption>Alcance y límites</caption>
+    <tbody>
+      <tr>
+        <td style="width:38%"><strong>Tipo de revisión</strong></td>
+        <td>Pasiva y no intrusiva. Solo observación de lo público.</td>
+      </tr>
+      <tr>
+        <td><strong>Duración</strong></td>
+        <td>Cinco días hábiles de observación.</td>
+      </tr>
+      <tr>
+        <td><strong>Sistemas internos</strong></td>
+        <td>No se accedió a servidores, bases de datos ni correspondencia del personal.</td>
+      </tr>
+      <tr>
+        <td><strong>Datos de pacientes</strong></td>
+        <td>No se accedió ni se procesó información clínica de ningún paciente.</td>
+      </tr>
+      <tr>
+        <td><strong>Alteraciones</strong></td>
+        <td>Ninguna. Cero cambios en el sitio, en el hosting o en el correo.</td>
+      </tr>
+      <tr>
+        <td><strong>Entregable actual</strong></td>
+        <td>Este resumen estratégico. El detalle técnico se entrega en sesión.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <span class="callout-title">Cómo leer este documento</span>
+    <p>
+      Las páginas siguientes describen <strong>cuántos</strong> hallazgos
+      existen, en qué <strong>categorías</strong> y qué
+      <strong>consecuencia de negocio</strong> tiene cada categoría. No
+      describen cuáles son los hallazgos ni cómo comprobarlos: esa información
+      es técnica, tiene valor para quien busca el problema, y se entrega en
+      la reunión.
+    </p>
+  </div>
+</section>
+
+
+<!-- ================================================================
+     §2  VEREDICTO
+     ================================================================ -->
+<section class="page">
+  <div class="sec-head">
+  <span class="sec-num">Sección 02</span>
+  <h2 class="sec">Veredicto general</h2>
+  <p class="sec-lede">
+    Seis dominios, treinta y nueve hallazgos, once de ellos críticos. El
+    patrón no es que la clínica tenga un problema aislado: es que
+    <strong>todas las capas están expuestas al mismo tiempo</strong>, y eso
+    multiplica el costo de cualquier incidente.
+  </p>
+  </div>
+
+  <table class="matrix">
+    <caption>Calificación por dominio</caption>
+    <thead>
+      <tr>
+        <th style="width:33%">Dominio</th>
+        <th>Qué significa en la operación</th>
+        <th style="width:22%; text-align:right">Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="dom">Protección de datos del paciente</td>
+        <td class="desc">No hay control claro sobre qué datos existen, quién los tiene ni bajo qué resguardo.</td>
+        <td class="num"><span class="cell"><span class="dot dot--red"></span>Crítico</span></td>
+      </tr>
+      <tr>
+        <td class="dom">Cumplimiento legal y regulatorio</td>
+        <td class="desc">Faltan obligaciones vigentes y hay prácticas de publicidad que la ley restringe.</td>
+        <td class="num"><span class="cell"><span class="dot dot--red"></span>Crítico</span></td>
+      </tr>
+      <tr>
+        <td class="dom">Exposición en internet público</td>
+        <td class="desc">Hay piezas de la operación accesibles que no deberían estar a la vista de cualquiera.</td>
+        <td class="num"><span class="cell"><span class="dot dot--red"></span>Crítico</span></td>
+      </tr>
+      <tr>
+        <td class="dom">Correo electrónico y suplantación</td>
+        <td class="desc">La clínica no puede garantizar que sus correos lleguen al buzón del paciente.</td>
+        <td class="num"><span class="cell"><span class="dot dot--amber"></span>Atención</span></td>
+      </tr>
+      <tr>
+        <td class="dom">Integridad de la plataforma web</td>
+        <td class="desc">El sitio está construido sobre piezas que ya no reciben mantenimiento.</td>
+        <td class="num"><span class="cell"><span class="dot dot--amber"></span>Atención</span></td>
+      </tr>
+      <tr>
+        <td class="dom">Infraestructura y alojamiento</td>
+        <td class="desc">La capa que sostiene todo lo demás no está orientada a seguridad.</td>
+        <td class="num"><span class="cell"><span class="dot dot--amber"></span>Atención</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="legend">
+    <span><span class="dot dot--red"></span>Crítico — requiere atención inmediata</span>
+    <span><span class="dot dot--amber"></span>Atención — plan de corrección</span>
+    <span><span class="dot dot--green"></span>Satisfactorio — se mantiene</span>
+  </div>
+
+  <figure>
+    <img src="assets/severity-distribution.png" alt="Distribución de los hallazgos por severidad: 11 críticos, 16 altos, 10 medios y 2 bajos, sobre un total de 39.">
+    <figcaption>
+      <b>Figura 1.</b> Distribución por severidad de los 39 hallazgos registrados.
+      Los once hallazgos críticos no son independientes entre sí: se refuerzan
+      en cadena y, si ocurrieran más de uno a la vez, producen un incidente mayor.
+    </figcaption>
+  </figure>
+
+  <div class="callout callout--ok">
+    <span class="callout-title">Una lectura honesta del veredicto</span>
+    <p>
+      Ninguno de los seis dominios quedó en estado satisfactorio, y conviene
+      decirlo con todas sus letras. Aun así, la clínica <strong>no está en
+      una posición de pérdida total</strong>: el cifrado del canal por el que
+      viaja la información de los pacientes y la higiene interna del sitio
+      están por encima del promedio del sector. Eso se detalla en la
+      <strong>sección 6</strong>, y es la razón por la que este diagnóstico
+      es corregible en semanas y no en meses.
+    </p>
+  </div>
+</section>
+
+
+<!-- ================================================================
+     §3  COSTO
+     ================================================================ -->
+<section class="page">
+  <div class="sec-head">
+  <span class="sec-num">Sección 03</span>
+  <h2 class="sec">Por qué importa, en dinero</h2>
+  <p class="sec-lede">
+    Las brechas de seguridad no se miden en cantidad de vulnerabilidades, sino
+    en lo que cuesta resolverlas. Este apartado usa cifras públicas de una de
+    las mediciones más citadas del sector para dimensionar el riesgo de la
+    clínica.
+  </p>
+  </div>
+
+  <figure>
+    <img src="assets/breach-cost-benchmarks.png" alt="Costo promedio de una filtración de datos: 4.99 millones de dólares a nivel global, 4.65 millones en América Latina, 6.64 millones en el sector salud y 11.5 millones en Estados Unidos.">
+    <figcaption>
+      <b>Figura 2.</b> Costo promedio de una filtración de datos, en millones de
+      dólares. Fuente: <i>IBM Cost of a Data Breach Report 2026</i> (IBM Security
+      y Ponemon Institute). El sector salud se define en el estudio como
+      hospitales y clínicas.
+    </figcaption>
+  </figure>
+
+  <h3>Las cifras que más pesan en este caso</h3>
+
+  <table class="tight">
+    <caption>Puntos de referencia aplicables a una clínica dental</caption>
+    <thead>
+      <tr>
+        <th style="width:30%">Referencia</th>
+        <th>Cifra promedio<br>por filtración</th>
+        <th class="num" style="width:40%">Por qué aplica aquí</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>América Latina</strong><br><span class="note">muestra que incluye a México</span></td>
+        <td><strong>USD 4.65 millones</strong></td>
+        <td class="num">Es la región de referencia más cercana para una clínica mexicana.</td>
+      </tr>
+      <tr>
+        <td><strong>Sector salud</strong><br><span class="note">hospitales y clínicas</span></td>
+        <td><strong>USD 6.64 millones</strong></td>
+        <td class="num">Sector más caro del estudio por decimotercer año consecutivo.</td>
+      </tr>
+      <tr>
+        <td><strong>Datos personales de clientes</strong><br><span class="note">52 % de las filtraciones</span></td>
+        <td><strong>USD 192</strong> <span class="note">por registro</span></td>
+        <td class="num">El historial clínico de un paciente es dato personal, no un dato cualquiera.</td>
+      </tr>
+      <tr>
+        <td><strong>Registros por incidente</strong><br><span class="note">promedio en América Latina</span></td>
+        <td><strong>40,300</strong> <span class="note">registros</span></td>
+        <td class="num">Un solo error puede arrastrar la base completa, no un paciente.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    La lectura combinada es directa: una sola filtración en una organización
+    de salud en América Latina cuesta, en promedio, alrededor de
+    <strong>USD 4.65 millones</strong>, y las organizaciones de salud promedian
+    <strong>USD 6.64 millones</strong> en el mundo. Para una clínica, el
+    expediente de cada paciente —nombre, teléfono, historial de
+    tratamientos— se cuenta como <strong>dato personal</strong>, y cada
+    registro personal comprometido tiene un costo asociado. Una clínica de
+    tamaño pequeño no escapa de esto por ser pequeña: escapa por
+    <em>no llegar a ser el incidente</em>.
+  </p>
+
+  <figure>
+    <img src="assets/breach-response-time.png" alt="Tiempo promedio de una filtración: 183 días para detectarla y 64 días para contenerla, 247 días en total.">
+    <figcaption>
+      <b>Figura 3.</b> Tiempo promedio para detectar y contener una filtración a
+      nivel mundial. Fuente: <i>IBM Cost of a Data Breach Report 2026</i>. Es la
+      razón por la que la <em>prevención</em> es más barata que la
+      <em>respuesta</em>.
+    </figcaption>
+  </figure>
+
+  <div class="callout callout--risk">
+    <span class="callout-title">Nota de rigor sobre las cifras</span>
+    <p>
+      El informe 2026 <strong>no publica un desglose exclusivo para México</strong>:
+      México forma parte de la muestra regional de América Latina. Por eso la
+      cifra que se cita aquí es la regional y está etiquetada como tal. El
+      estudio tampoco publica un corte específico para pequeñas y medianas
+      empresas, de modo que la cifra de sector salud corresponde a
+      organizaciones de tamaño corporativo: <strong>es un techo, no un
+      promedio de una clínica como la suya</strong>, y se usa aquí como
+      referencia de orden de magnitud, no como proyección de su caso.
+    </p>
+  </div>
+</section>
+
+
+<!-- ================================================================
+     §4  LEGAL
+     ================================================================ -->
+<section class="page">
+  <div class="sec-head">
+  <span class="sec-num">Sección 04</span>
+  <h2 class="sec">Exposición legal inmediata</h2>
+  <p class="sec-lede">
+    Este es el apartado más importante del documento, y no porque la seguridad
+    sea un problema técnico, sino porque en México la protección de datos
+    personales <strong>tiene sanción económica directa</strong> y porque el
+    marco vigente cambió de forma reciente.
+  </p>
+  </div>
+
+  <div class="callout callout--risk">
+    <span class="callout-title">El punto de partida</span>
+    <p>
+      La <strong>Ley Federal de Protección de Datos Personales en Posesión de
+      los Particulares</strong> fue publicada en el Diario Oficial el
+      <strong>20 de marzo de 2025</strong>, entró en vigor el
+      <strong>21 de marzo de 2025</strong> y su última reforma es del
+      <strong>14 de noviembre de 2025</strong>. Abrogó la ley de 2010. Como
+      consecuencia de la reforma, <strong>el INAI ya no existe</strong> y la
+      autoridad competente es la
+      <strong>Secretaría Anticorrupción y Buen Gobierno</strong>. La clínica
+      opera, por tanto, bajo un régimen nuevo y con una autoridad distinta a la
+      que aplicaría a la norma anterior.
+    </p>
+  </div>
+
+  <h3>Lo que está en riesgo hoy</h3>
+
+  <table class="tight">
+    <caption>Riesgos legales identificados y su fundamento</caption>
+    <thead>
+      <tr>
+        <th style="width:36%">Situación</th>
+        <th style="width:20%">Fundamento</th>
+        <th class="num" style="width:26%">Exposición máxima</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Incumplimiento general</strong> de las obligaciones de la ley vigente</td>
+        <td>LFPDPPP, art. 59, fr. III</td>
+        <td class="num"><strong>$37,539,200 MXN</strong><br><span class="note">320,000 UMA × $117.31</span></td>
+      </tr>
+      <tr>
+        <td><strong>El mismo incumplimiento</strong> tratándose de datos sensibles</td>
+        <td>LFPDPPP, art. 59, fr. IV</td>
+        <td class="num"><strong>El doble</strong><br><span class="note">de la multa anterior</span></td>
+      </tr>
+      <tr>
+        <td><strong>Falta de aviso de privacidad</strong> o incumplimiento de sus obligaciones</td>
+        <td>LFPDPPP, art. 58, fr. V</td>
+        <td class="num">Infracción autónoma</td>
+      </tr>
+      <tr>
+        <td><strong>Ausencia de datos de salud</strong> en los avisos y consentingimientos</td>
+        <td>LFPDPPP, art. 59, fr. II</td>
+        <td class="num"><strong>≈ $18.8 millones MXN</strong><br><span class="note">y orden de detener<br>el tratamiento de datos</span></td>
+      </tr>
+      <tr>
+        <td><strong>Transferencia internacional de datos</strong> sin cláusula contractual</td>
+        <td>LFPDPPP, art. 35 y art. 58, fr. X</td>
+        <td class="num">Infracción autónoma</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="note mb-l no-break">
+    Valor de la UMA tomado del INEGI, publicado en el DOF el 9 de enero de 2026
+    ($117.31). Los montos indicados corresponden a los máximos que la ley
+    faculta a la autoridad imponer; no son una predicción de lo que se cobrará
+    en un caso concreto.
+  </p>
+
+  <div class="callout callout--risk">
+    <span class="callout-title">Lo que la multa no es lo único que hay en juego</span>
+    <p>
+      Una orden de <strong>detener el tratamiento de datos</strong> no se paga:
+      se cumple. Si la autoridad lo ordena —y la ley la faculta cuando
+      hay datos de salud sin resguardo— significa que la clínica deja de poder
+      registrar, contactar y dar seguimiento a sus pacientes. <strong>Se
+      detienen las citas.</strong> Ese es el riesgo que un dueño de clínica
+      debe mirar primero, porque es el único de los listados que no tiene
+      solución con dinero.
+    </p>
+  </div>
+
+  <h3>Obligaciones concretas que hoy no se cumplen</h3>
+  <ul class="clean">
+    <li>
+      <strong>Notificación inmediata a los pacientes.</strong> El
+      <strong>artículo 19</strong> de la LFPDPPP obliga a notificar de inmediato
+      a los pacientes afectados cuando ocurre una brecha de seguridad. No
+      existe hoy un procedimiento de aviso definido para la clínica.
+    </li>
+    <li>
+      <strong>Derechos ARCO.</strong> El <strong>artículo 22</strong> reconoce
+      los derechos de acceso, rectificación, cancelación y oposición, con un
+      plazo de <strong>20 días hábiles</strong> para responder. Sin un
+      responsable designado, ese plazo corre sin que nadie lo atienda.
+    </li>
+    <li>
+      <strong>Cédula profesional en la publicidad.</strong> El
+      <strong>artículo 83 de la Ley General de Salud</strong> exige que la
+      cédula profesional del odontólogo aparece en la publicidad. La publicidad
+      de la clínica <strong>es el sitio web</strong>: ahí debe estar, y no
+      está.
+    </li>
+    <li>
+      <strong>Límites a la publicidad.</strong> El
+      <strong>Reglamento de la Ley General de Salud en Materia de Publicidad</strong>
+      prohíbe, en su <strong>artículo 18</strong>, afirmaciones de eficacia o de
+      resultados que no estén científicamente comprobados, y en su
+      <strong>artículo 6, fr. I</strong>, atribuir cualidades terapéuticas que no
+      correspondan al tratamiento. Ambas reglas aplican al contenido del sitio.
+    </li>
+    <li>
+      <strong>Precios publicados.</strong> El <strong>artículo 50 de la Ley
+      Federal de Protección al Consumidor</strong> establece que, si se anuncia
+      un precio y no se cumple, se debe <strong>la diferencia económica y
+      además el servicio</strong>. Publicar una promoción es un compromiso
+      exigible, no un texto de marketing.
+    </li>
+  </ul>
+</section>
+
+
+<!-- ================================================================
+     §5  ÁREAS EXPUESTAS
+     ================================================================ -->
+<section class="page">
+  <div class="sec-head">
+  <span class="sec-num">Sección 05</span>
+  <h2 class="sec">Áreas donde su operación está expuesta</h2>
+  <p class="sec-lede">
+    Seis categorías de riesgo, descritas por lo que le puede pasar a la
+    clínica. Ninguna de las seis describe un procedimiento técnico ni indica
+    cómo explorar el problema: describen consecuencias, que es lo que
+    corresponde a esta sección.
+  </p>
+  </div>
+
+  <div class="risk-row">
+    <div class="risk-idx">01</div>
+    <div class="risk-body">
+      <div class="risk-head">
+        <strong>Alguien puede enviar correos que parecen venir de la clínica</strong>
+        <span class="chip chip--crit">Crítico</span>
+      </div>
+      <p>
+        Hoy la clínica no tiene forma de garantizar que un correo enviado a un
+        paciente llegue a su buzón y no a la carpeta de spam. En la práctica,
+        eso significa que alguien externo puede escribirle a un paciente
+        <em>usando el nombre de la clínica</em>, pedirle datos personales o
+       otsorgarle un servicio falso, y que el correo tenga toda la apariencia
+        de ser legítimo.
+      </p>
+    </div>
+  </div>
+
+  <div class="risk-row">
+    <div class="risk-idx">02</div>
+    <div class="risk-body">
+      <div class="risk-head">
+        <strong>La clínica no sabe qué datos personales maneja</strong>
+        <span class="chip chip--crit">Crítico</span>
+      </div>
+      <p>
+        No existe un registro que diga qué información de pacientes se conserva,
+        en qué lugares, quién la tiene ni bajo qué resguardo. Sin ese
+        inventario es imposible demostrar cuidado, imposible responder una
+        solicitud de acceso y difícil saber qué se debe proteger primero.
+      </p>
+    </div>
+  </div>
+
+  <div class="risk-row">
+    <div class="risk-idx">03</div>
+    <div class="risk-body">
+      <div class="risk-head">
+        <strong>Un incidente puede exponer a todos los pacientes a la vez</strong>
+        <span class="chip chip--crit">Crítico</span>
+      </div>
+      <p>
+        La operación depende de herramientas externas que también guardan datos
+        de pacientes, sin que la clínica tenga contrato ni control sobre ellos.
+        Si una de esas herramientas sufre un incidente, la comunicación a los
+        pacientes afectados y la estimación del daño le corresponden a la
+        clínica, no al proveedor.
+      </p>
+    </div>
+  </div>
+
+  <div class="risk-row">
+    <div class="risk-idx">04</div>
+    <div class="risk-body">
+      <div class="risk-head">
+        <strong>El sitio puede difundir información que la ley no permite anunciar</strong>
+        <span class="chip chip--alto">Alto</span>
+      </div>
+      <p>
+        Hay contenidos y afirmaciones en la publicidad digital que la
+        normatividad de salud restringe, y la identificación profesional que la
+        ley exige en toda publicidad no aparece. No es una multa hipotética:
+        es la línea que separa un sitio informativo de uno que puede ser
+        sancionado.
+      </p>
+    </div>
+  </div>
+
+  <div class="risk-row">
+    <div class="risk-idx">05</div>
+    <div class="risk-body">
+      <div class="risk-head">
+        <strong>El sitio está construido sobre piezas sin mantenimiento</strong>
+        <span class="chip chip--alto">Alto</span>
+      </div>
+      <p>
+        Elementos que el sitio usa para funcionar ya no reciben actualizaciones
+        de seguridad de quienes los desarrollan. Mientras estén ahí, el sitio
+        pierde defensas con el paso de los meses: hoy tiene un riesgo
+        conocido y mañana tendrá otro que nadie ha revisado todavía.
+      </p>
+    </div>
+  </div>
+
+  <div class="risk-row">
+    <div class="risk-idx">06</div>
+    <div class="risk-body">
+      <div class="risk-head">
+        <strong>Cualquier visitante puede ver detalles internos del sistema</strong>
+        <span class="chip chip--medio">Medio</span>
+      </div>
+      <p>
+        Hay piezas de la operación —un sistema interno de trabajo y parte de su contenido— que
+        están accesibles públicamente y que no deberían estarlo. No es el
+        hallazgo más grave de la revisión, pero sí de las más rápidas de
+        corregir y de las que más rápido se corrigen.
+      </p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <span class="callout-title">Lo que este documento no contiene</span>
+    <p>
+      No se listan los 39 hallazgos individuales, ni sus ubicaciones exactas,
+      ni los pasos para comprobarlos. Esa información es el entregable técnico
+      completo y se comparte en la sesión de la sección 8. Mantenerla fuera de
+      este resumen es una decisión deliberada: un documento que viaja por
+      correo no es el lugar adecuado para detallar dónde está el problema.
+    </p>
+  </div>
+</section>
+
+
+<!-- ================================================================
+     §6  LO QUE YA ESTÁ BIEN
+     ================================================================ -->
+<section class="page">
+  <div class="sec-head">
+  <span class="sec-num">Sección 06</span>
+  <h2 class="sec">Lo que ya está bien</h2>
+  <p class="sec-lede">
+    Un informe que solo enumera problemas no es un informe: es un catálogo de
+    problemas. Esta sección documenta, sin suavizar, los controles que la clínica
+    <strong>sí tiene en pie</strong> — y son más de los que esperábamos.
+  </p>
+  </div>
+
+  <div class="strength">
+    <div class="strength-mark"><span></span></div>
+    <div class="strength-body">
+      <strong>La higiene interna del sitio está por encima del promedio</strong>
+      <p>
+        No se encontraron copias de seguridad, archivos de configuración ni
+        registros de acceso expuestos públicamente. Este es el error más común
+        en sitios del tamaño y el giro de la clínica, y aquí no está
+        presente. El trabajo de quien construyó el sitio hizo bien esta parte.
+      </p>
+    </div>
+  </div>
+
+  <div class="strength">
+    <div class="strength-mark"><span></span></div>
+    <div class="strength-body">
+      <strong>El canal por el que viaja la información de los pacientes está bien protegido</strong>
+      <p>
+        La configuración de cifrado del sitio está sólida y actualizada: usa
+        solamente algoritmos actuales y no admite los protocolos antiguos que
+        permiten interceptar la comunicación. Cualquier dato que un paciente
+        escriba viaja cifrado.
+      </p>
+    </div>
+  </div>
+
+  <div class="strength">
+    <div class="strength-mark"><span></span></div>
+    <div class="strength-body">
+      <strong>Cero rastreadores, cero cookies de terceros</strong>
+      <p>
+        El sitio no instala ninguna herramienta de seguimiento, no construye
+        perfiles de comportamiento y no comparte el recorrido de los pacientes
+        con anunciantes. Es decir: <strong>la clínica no está vendiendo el
+        comportamiento de sus pacientes</strong> — y, por el mismo motivo, no
+        está recogiendo datos que después tendría que proteger.
+      </p>
+    </div>
+  </div>
+
+  <div class="strength">
+    <div class="strength-mark"><span></span></div>
+    <div class="strength-body">
+      <strong>No hay credenciales ni llaves de acceso filtradas en el sitio</strong>
+      <p>
+        Se revisó el contenido publicado del sitio en busca de contraseñas,
+        llaves de acceso a servicios y secretos de programación. No hay
+        ninguno expuesto. Es un resultado relevante: cuando aparece uno, es
+        el hallazgo que más rápido se convierte en un incidente real.
+      </p>
+    </div>
+  </div>
+
+  <div class="strength">
+    <div class="strength-mark"><span></span></div>
+    <div class="strength-body">
+      <strong>El sitio funciona y el contenido principal está disponible</strong>
+      <p>
+        La navegación, los servicios y la información de contacto cargan
+        correctamente. No se encontró una denegación de servicio ni una
+        interrupción que pusiera en riesgo la capacidad de atender pacientes
+        por el sitio.
+      </p>
+    </div>
+  </div>
+
+  <div class="callout callout--ok">
+    <span class="callout-title">Por qué esta sección importa tanto como la anterior</span>
+    <p>
+      Estos cinco puntos son la razón de que el diagnóstico sea de
+      <strong>semanas</strong> y no de meses. No hay una reconstrucción total
+      que hacer: hay una base sana sobre la que corregir por capas, empezando
+      por lo que la ley exige y siguiendo por lo que el negocio necesita.
+      Un informe que solo mostrara los problemas dejaría a la clínica con la
+      impresión de estar frente a un desastre; no es el caso.
+    </p>
+  </div>
+</section>
+
+
+<!-- ================================================================
+     §7  SERVICIO
+     ================================================================ -->
+<section class="page">
+  <div class="sec-head">
+  <span class="sec-num">Sección 07</span>
+  <h2 class="sec">Recomendación: un servicio integral</h2>
+  <p class="sec-lede">
+    La recomendación no es «arreglar lo que se encontró». Es llevar la
+    operación digital de la clínica a un estado en que la seguridad, el
+    cumplimiento legal y la captación de pacientes trabajen en la misma
+    dirección. El servicio se ofrece en tres niveles, y se pueden tomar por
+    separado o en secuencia.
+  </p>
+  </div>
+
+  <h3>Nivel 1 — Diagnóstico <span class="chip chip--navy">Recomendado para comenzar</span></h3>
+  <p>
+    El paso que resuelve la incertidumbre. Entrega el informe técnico
+    completo con los 39 hallazgos, sus ubicaciones exactas, los pasos para
+    comprobarlos y una hoja de ruta de corrección ordenada por prioridad y por
+    esfuerzo. Se entrega como documento y se explica en una sesión de
+    seguimiento.
+  </p>
+
+  <h3>Nivel 2 — Reconstrucción <span class="chip chip--navy">El núcleo de la solución</span></h3>
+  <p>
+    El sitio actual se construye sobre piezas que ya no reciben
+    mantenimiento, así que corregirlo sobre esa base implica reconstruirlo.
+    Este nivel entrega un sitio nuevo, construido para durar y para cumplir:
+    </p>
+  <ul class="clean">
+    <li>Sitio web nuevo, con arquitectura pensada para la clínica y no heredada de 2015.</li>
+    <li>Endurecimiento de seguridad: configuración de origen, encabezados, cifrado y catálogo de lo expuesto.</li>
+    <li>Aviso de privacidad y documentación legal al día con la ley de 2025 y la autoridad vigente.</li>
+    <li>Información de pacientes centralizada en un CRM que la clínica <strong>es dueña</strong>, sin dependencia de terceros.</li>
+    <li>Flujo de agendar citas operable desde el propio sitio.</li>
+    <li>Analítica configurada con consentimiento, respetando la normativa y sin perfilar al paciente.</li>
+  </ul>
+
+  <h3>Nivel 3 — Continuidad</h3>
+  <p>
+    La seguridad no es un proyecto que se entrega y se olvida. Este nivel
+    mantiene el sitio y los sistemas en estado: monitoreo permanente, ciclo de
+    actualización, verificaciones periódicas de restauración de respaldos y
+    reevaluación trimestral.
+  </p>
+
+  <table class="no-break">
+    <caption>Valores de referencia — no incluyen IVA</caption>
+    <thead>
+      <tr>
+        <th style="width:13%">Nivel</th>
+        <th style="width:26%">Inversión</th>
+        <th style="width:14%">Plazo</th>
+        <th>Qué resuelve</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Diagnóstico</strong></td>
+        <td class="num"><strong>$8,000 MXN</strong><br><span class="note">pago único</span></td>
+        <td class="num">1 a 2 semanas</td>
+        <td>Da certeza total sobre qué hay que corregir y en qué orden.</td>
+      </tr>
+      <tr>
+        <td><strong>Reconstrucción</strong></td>
+        <td class="num nowrap"><strong>$45,000 – $85,000 MXN</strong></td>
+        <td class="num">8 a 12 semanas</td>
+        <td>Cumplimiento legal, seguridad y captación de pacientes sobre una base propia.</td>
+      </tr>
+      <tr>
+        <td><strong>Continuidad</strong></td>
+        <td class="num nowrap"><strong>desde $12,000 MXN/mes</strong></td>
+        <td class="num">Permanente</td>
+        <td>Que lo que se construya se mantenga, y que no vuelva a depreciarse.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="note">
+    <strong>Nota sobre los rangos.</strong> Son rangos y no precios cerrados
+    porque el alcance final depende de lo que revele la reunión: cuántas
+    piezas hay que rehacer, qué tanto se conserva de lo actual y qué módulos
+    de CRM se necesitan. El Diagnóstico es <strong>acreditable al 100 % contra
+    los niveles 2 y 3</strong> si se contrata dentro de los 30 días siguientes
+    a su entrega. Los valores indicados <strong>no incluyen IVA</strong>.
+  </p>
+
+  <div class="callout">
+    <span class="callout-title">Secuencia sugerida</span>
+    <p>
+      Diagnóstico → Reconstrucción → Continuidad es el orden natural, y el
+      único que evita tomar decisiones de presupuesto con información
+      incompleta. Si el presupuesto del año no alcanza para los tres, el
+      Diagnóstico por sí solo ya reduce el riesgo legal inmediato y deja la
+      decisión de Reconstrucción bien fundamentada.
+    </p>
+  </div>
+</section>
+
+
+<!-- ================================================================
+     §8  SIGUIENTE PASO
+     ================================================================ -->
+<section class="page">
+  <div class="sec-head">
+  <span class="sec-num">Sección 08</span>
+  <h2 class="sec">Siguiente paso</h2>
+  <p class="sec-lede">
+    Este documento responde el «qué» y el «cuánto duele». Falta el «cómo»,
+    y esa parte requiere una conversación.
+  </p>
+  </div>
+
+  <div class="cta">
+    <p class="cta-h">Invitación a sesión de 45 minutos</p>
+    <p>
+      Proponemos una sesión de trabajo de <strong>45 minutos</strong>, sin
+      costo y sin compromiso, en la fecha y el lugar que a la clínica le
+      resulte más cómodo: en línea o presencial en la clínica. La convoquen
+      el responsable del negocio y, si desean, el odontólogo responsable del
+      sitio.
+    </p>
+
+    <div class="grid-2" style="margin-top:6mm;">
+      <div>
+        <h4 style="font-size:8.3pt;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--navy);margin:0 0 2.6mm;">Lo que revisaremos juntos</h4>
+        <ul class="clean" style="margin:0;">
+          <li>El informe técnico completo, hallazgo por hallazgo, con su ubicación exacta.</li>
+          <li>Qué está bloqueando las citas y qué está únicamente expuesta en internet.</li>
+          <li>Qué obligaciones legales tienen fecha y cuáles pueden esperar al siguiente trimestre.</li>
+          <li>Qué parte del sitio actual conviene conservar y qué conviene rehacer.</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="font-size:8.3pt;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--navy);margin:0 0 2.6mm;">Lo que se llevan al terminar</h4>
+        <ul class="clean" style="margin:0;">
+          <li>Una hoja de ruta de corrección ordenada por urgencia, esfuerzo y costo.</li>
+          <li>Un alcance cerrado y un precio firme para el nivel que decidan contratar.</li>
+          <li>El aviso de privacidad y los documentos legales base, ya redactados.</li>
+          <li>Una respuesta escrita a las preguntas que surjan en la sesión.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="booking">
+      <div>
+        <div class="booking-l">Agendar la sesión</div>
+        <div class="booking-v">Enlace de reserva de calendario por confirmar</div>
+      </div>
+      <div class="booking-slot">Espacio reservado para enlace de reserva</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel panel--tint">
+      <h4>Si no hay reunión</h4>
+      <p>
+        También funciona. El Diagnóstico ($8,000 MXN) es exactamente la
+        contraparte de esa reunión, y es acreditable al 100 % si se contrata
+        Reconstrucción o Continuidad dentro de los 30 días siguientes.
+      </p>
+    </div>
+    <div class="panel panel--tint">
+      <h4>Tiempo válido de este documento</h4>
+      <p>
+        Los hallazgos corresponden a la exposición pública observada el
+        <strong>22 de octubre de 2026</strong>. Cualquier cambio en el sitio,
+        el correo o el alojamiento puede alterar el panorama. Conviene tomar la
+        decisión con el Diagnóstico vigente.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ================================================================
+     §9  FUENTES
+     ================================================================ -->
+<section class="page">
+  <div class="sec-head">
+  <span class="sec-num">Sección 09</span>
+  <h2 class="sec">Fuentes y metodología</h2>
+  <p class="sec-lede">
+    Todas las cifras y referencias normativas citadas en este documento son
+    públicas y verificables. Se listan aquí para que la clínica pueda
+    comprobarlas por su cuenta.
+  </p>
+  </div>
+
+  <h3>Cifras de costo</h3>
+  <ul class="fuentes">
+    <li>
+      <b>IBM Security y Ponemon Institute, <i>Cost of a Data Breach Report 2026</i></b>
+      <span class="src-tag">(edición 2026; 602 organizaciones, 16 países y regiones, 17 industrias; estudio de marzo de 2025 a febrero de 2026)</span>
+      — Costo promedio global: USD 4.99 millones. América Latina (muestra
+      regional que incluye México, Argentina, Chile y Colombia): USD 4.65
+      millones. Sector salud, definido en el estudio como hospitales y
+      clínicas: USD 6.64 millones, el más alto por decimotercer año
+      consecutivo. Estados Unidos: USD 11.5 millones. Datos personales de
+      clientes: USD 192 por registro, en 52 % de las filtraciones. Tiempo
+      promedio de detección y contención: 247 días (183 + 64).
+    </li>
+    <li>
+      <b>Nota sobre el alcance de la fuente</b>
+      <span class="src-tag">(lectura responsable de la cifra)</span>
+      — La edición 2026 no publica un desglose exclusivo para México ni un
+      corte específico para pequeñas y medianas empresas. Por ello se cita la
+      cifra regional de América Latina, etiquetada como tal, y la de sector
+      salud se presenta como referencia de orden de magnitud y no como
+      proyección del caso de la clínica.
+    </li>
+  </ul>
+
+  <h3>Marco normativo citado</h3>
+  <ul class="fuentes">
+    <li>
+      <b>Ley Federal de Protección de Datos Personales en Posesión de los
+      Particulares</b> <span class="src-tag">(DOF 20-mar-2025; vigente
+      21-mar-2025; última reforma 14-nov-2025; abrogó la ley de 2010)</span>
+      — Artículos 19, 22, 35, 58, 59.
+    </li>
+    <li>
+      <b>Autoridad competente</b> <span class="src-tag">(contexto institucional)</span>
+      — Secretaría Anticorrupción y Buen Gobierno. El INAI fue eliminado con la
+      reforma de 2025.
+    </li>
+    <li>
+      <b>Valor de la UMA</b> <span class="src-tag">(DOF 09-ene-2026)</span>
+      — $117.31, INEGI. Base de cálculo de las multas del artículo 59.
+    </li>
+    <li>
+      <b>Ley General de Salud</b> <span class="src-tag">(art. 83)</span>
+      — Credencial profesional en la publicidad.
+    </li>
+    <li>
+      <b>Reglamento de la Ley General de Salud en Materia de Publicidad</b>
+      <span class="src-tag">(art. 6 fr. I; art. 18)</span> — Atribución de
+      cualidades terapéuticas y afirmaciones de eficacia.
+    </li>
+    <li>
+      <b>Ley Federal de Protección al Consumidor</b>
+      <span class="src-tag">(art. 50)</span> — Cumplimiento de precios
+      publicados.
+    </li>
+  </ul>
+
+  <h3>Metodología de la revisión</h3>
+  <div class="callout">
+    <p>
+      Revisión <strong>pasiva y no intrusiva</strong> de la exposición pública
+      de la clínica, realizada durante cinco días hábiles. No se accedió a
+      sistemas internos, credenciales ni información de pacientes; no se
+      ejecutaron acciones que alteraran el estado de los sistemas; no se
+     desactivó ni deshabilitó ningún servicio. Los hallazgos se clasificaron por
+      severidad según su impacto potencial en la operación y en el
+      cumplimiento legal. El detalle técnico de los 39 hallazgos se comparte en
+      la sesión descrita en la sección 8.
+    </p>
+  </div>
+
+  <!-- ============================================================
+       BLOQUE OPCIONAL: "VERIFICACIÓN INDEPENDIENTE"
+       DESACTIVADO POR DEFECTO (display:none).
+       SOLO habilítalo DESPUÉS de haber obtenido la revisión y de
+       haber corregido lo que la revisión haya encontrado.
+       Para habilitar: cambia style="display:none" por style="display:block"
+       y edita el texto entre corchetes.
+       Razón de la cautela: si no nombras quién revisó, la afirmación
+       es teknikicamente cierta pero commercially hueca. Si lo nombras
+       como IA, es transparente pero un dueño de clínica no lo
+       interpretará como validación. Ver LOOP-DE-CORRECCION.md §4.
+       ============================================================ -->
+  <div class="callout" style="display:none; margin-top:6mm;">
+    <h3>Verificación independiente del diagnóstico</h3>
+    <p>
+      La metodología, los 39 hallazgos y la calibración de las prioridades
+      de este diagnóstico fueron remitidos a una <strong>revisión técnica
+      externa</strong> con el propósito de verificar la exactitud de las
+      afirmaciones, la corrección de las prioridades y la calibración de los
+      niveles de riesgo. [COMPLETAR: qué se revisó, qué se ajustó y qué
+      se confirmó]. El resultado se presenta en la sesión descrita en la
+      sección 8.
+    </p>
+  </div>
+
+  <p class="note" style="margin-top:6mm;">
+    Documento preparado el 22 de octubre de 2026 para Clínica Dental Easy.
+    Confidencial: contiene información de la evaluación de seguridad de la
+    clínica y no debe distribuirse ni compartirse con terceros. Este documento
+    es un resumen ejecutivo y <strong>no constituye asesoría legal</strong>;
+    las referencias normativas se incluyen para dimensionar el riesgo, y su
+    interpretación corresponde a un profesional del derecho.
+  </p>
+</section>
+
+</body>
+</html>

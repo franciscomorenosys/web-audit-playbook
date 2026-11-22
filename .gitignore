@@ -1,0 +1,180 @@
+# ===========================================================================
+#  Web Audit Playbook — .gitignore
+#  ---------------------------------------------------------------------------
+#  Regla general de este repositorio:
+#
+#    Si un fichero identifica a un cliente real, a un paciente o a una
+#    clínica, NO entra en git. El caso se queda en el disco del auditor.
+#
+#  Hay tres familias de ficheros que nunca se versionan:
+#
+#    1. MATERIAL DE CLIENTE      -> 03-casos/, evidencia/, informes originales
+#    2. SECRETOS DE AUTORIZACIÓN -> authorization*.json (sólo el .example)
+#    3. ARTEFACTOS REGENERABLES  -> .venv/, __pycache__/, dist/, node_modules/
+#
+#  OJO: las reglas de este fichero NO deben tocar
+#  `01-tooling/scripts/tests/fixtures/`. Los fixtures contienen secretos
+#  SINTÉTICOS (valores que no existen en ningún proveedor) y son necesarios
+#  para que `tests/selftest.py` pueda comprobar que el escáner detecta y
+#  enmascara secretos sin filtrarlos.
+# ===========================================================================
+
+
+# ---------------------------------------------------------------------------
+#  1. CASOS REALES DE CLIENTE — NUNCA EN EL REPO
+# ---------------------------------------------------------------------------
+# `03-casos/` contiene la evidencia de una auditoría real y confidencial:
+# informes técnicos originales, HTML descargado de sitios de terceros,
+# volcados de DNS/TLS, listados de usuarios, `*.tsv` de resultados,
+# `*.json` de hallazgos y correos del cliente.
+#
+# Se queda en el disco del auditor. NUNCA se versiona, NUNCA se publica.
+# En el repo público sólo vive el material ya saneado de `05-plantillas-de-trabajo/`.
+/03-casos/
+
+# Evidencia bruta de cualquier auditoría (en cualquier subcarpeta).
+evidencia/
+evidence/
+
+# Resultados tabulares de escaneo y volcados de hallazgos.
+# (Los que viven dentro de 03-casos/ ya quedan fuera por la regla de arriba;
+#  estas reglas cubren el caso de que un caso se copie fuera de 03-casos/.)
+*.tsv
+hallazgos*.json
+hallazgos*.tsv
+findings*.json
+findings*.tsv
+*_findings.json
+secret_scan.txt
+secret_scan.json
+
+# La tabla de correspondencia "valor real -> marcador" del sanitizado.
+# Es la CLAVE INVERSA: si se publica junto al informe saneado, la
+# redacción no sirve de nada. Ver 05-plantillas-de-trabajo/QUE-SUBIR-Y-QUE-NO.md.
+MAPA-DE-REDACCION.md
+**/MAPA-DE-REDACCION.md
+
+# Material de trabajo con datos de cliente (registro de acciones real,
+# notas de auditoría, exportaciones del cliente).
+redaccion.json
+*.local.*
+
+
+# ---------------------------------------------------------------------------
+#  2. AUTORIZACIÓN Y SECRETOS DE LA CASA
+# ---------------------------------------------------------------------------
+# El fichero de autorización firmado (hosts, ventana, métodos, firma) es un
+# documento contractual: nunca se versiona. El formato sí: se publica
+# `authorization.example.json`, que es la plantilla a rellenar.
+authorization.json
+authorization-*.json
+**/authorization.json
+**/authorization-*.json
+
+# Lo mismo para cualquier otro fichero de credenciales o de entorno.
+.env
+.env.*
+**/.env
+**/.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+id_rsa
+id_ed25519
+credentials.json
+secrets.json
+
+
+# ---------------------------------------------------------------------------
+#  3. ENTORNOS VIRTUALES Y DEPENDENCIAS
+# ---------------------------------------------------------------------------
+# `02-plantillas/teaser-report/.venv/` pesa ~196 MB (2 494 archivos) y se
+# reconstruye por completo con un `pip install`. Ver la sección "Regenerar el
+# .venv" del README de esa plantilla.
+.venv/
+venv/
+env/
+ENV/
+node_modules/
+.bower_components/
+vendor/
+Pods/
+
+
+# ---------------------------------------------------------------------------
+#  4. BYTECODE Y CACHÉS DE COMPILACIÓN
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+coverage.xml
+htmlcov/
+
+
+# ---------------------------------------------------------------------------
+#  5. ARTEFACTOS DE COMPILACIÓN Y SALIDAS REGENERABLES
+# ---------------------------------------------------------------------------
+build/
+dist/
+out/
+.next/
+.nuxt/
+.output/
+target/
+*.egg-info/
+.cache/
+tmp/
+
+
+# ---------------------------------------------------------------------------
+#  6. SISTEMA OPERATIVO Y EDITORES
+# ---------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+
+# ---------------------------------------------------------------------------
+#  7. REGISTROS Y FICHEROS DE TRAZA
+# ---------------------------------------------------------------------------
+*.log
+logs/
+npm-debug.log*
+yarn-error.log*
+yarn-debug.log*
+pnpm-debug.log*
+pip-log.txt
+
+
+# ---------------------------------------------------------------------------
+#  8. INFORMES GENERADOS Y DESCARGAS
+# ---------------------------------------------------------------------------
+# Salidas de los escáneres y de los informes que se regeneran con un comando.
+report/
+reports/
+informe-*.json
+informe-*.tsv
+*.pdf.tmp
+*.tmp
+*.bak
+!*.html.bak

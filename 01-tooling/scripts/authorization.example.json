@@ -1,0 +1,19 @@
+{
+  "authorization_ref": "ROE-2026-001",
+  "client": "Clínica Ejemplo SA de CV",
+  "signed_by": "Dirección de Sistemas — Clínica Ejemplo (firma en RoE firmado)",
+  "signed_at": "2026-01-15T10:00:00Z",
+  "valid_from": "2026-01-01T00:00:00Z",
+  "valid_to": "2026-12-31T23:59:59Z",
+  "hosts": [
+    "ejemplo-auditoria.mx",
+    "www.ejemplo-auditoria.mx",
+    "*.ejemplo-auditoria.mx"
+  ],
+  "allowed_methods": ["GET", "HEAD"],
+  "max_bytes": 1048576,
+  "min_interval_s": 1.0,
+  "timeout_s": 20,
+  "user_agent": "Mozilla/5.0 (compatible; ClientSecurityAudit/1.0; +https://ejemplo-auditoria.mx)",
+  "notes": "Ejemplo de autorización. Los métodos POST/PUT/PATCH/DELETE se descartan aunque se listaran (RoE 1.1). Sustituir los hosts por los realmente autorizados y adjuntar el RoE firmado."
+}
