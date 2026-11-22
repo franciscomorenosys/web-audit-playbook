@@ -181,6 +181,10 @@ export async function render(contenedor) {
     cuerpo.append(
       tabla(columnas, visibles, {
         tarjetas: true,
+        // Las doce columnas del registro no caben en un panel de 1600 px con
+        // el relleno estándar: dos columnas quedaban fuera de pantalla. La
+        // variante `tabla--registro` las compacta para que quepan todas.
+        clase: "tabla--registro",
         caption: `Secret Register de ${datos.fuente || "la evidencia"}.`,
       }),
     );

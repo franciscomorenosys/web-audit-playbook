@@ -201,3 +201,17 @@ informe-*.tsv
 *.tmp
 *.bak
 !*.html.bak
+
+
+# ---------------------------------------------------------------------------
+#  9. CAPTURAS DE PANTALLA DE LA CONSOLA — ARTEFACTOS REGENERABLES
+# ---------------------------------------------------------------------------
+# `console/docs/screenshots/` son 8,8 MB de capturas de desarrollo: las ocho
+# vistas de la consola a página completa, en PNG al doble de resolución. No
+# se versionan por tamaño: son regenerables con un comando, documentado en
+# `console/docs/screenshots/README.md` (que sí se versiona).
+#
+# Las capturas de `console/docs/vista-previa/` sí se versionan: son tres
+# imágenes de 1600×1000 que ilustran el README y no llegan a 1 MB en total.
+console/docs/screenshots/*
+!console/docs/screenshots/README.md

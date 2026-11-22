@@ -34,11 +34,19 @@ function vertices(cx, cy, radio) {
   return puntos.join(" ");
 }
 
-/** Etiqueta corta de un host: la primera etiqueta, que es la que significa. */
+/**
+ * Etiqueta corta de un host: la primera etiqueta, que es la que significa.
+ *
+ * El rótulo tiene que caber DENTRO del hexágono: con 12 caracteres a 8 px
+ * ("clinica-demo") se derramaba sobre las celdas vecinas y el auditor ya no
+ * podía saber a qué hexágono pertenecía cada nombre. 10 caracteres es el
+ * máximo que entra en la celda con radio 30; el nombre entero sigue en el
+ * `title` de cada polígono.
+ */
 function etiquetaCorta(nombre) {
   const partes = String(nombre).split(".");
   const base = partes[0] || nombre;
-  return base.length > 12 ? `${base.slice(0, 11)}…` : base;
+  return base.length > 10 ? `${base.slice(0, 9)}…` : base;
 }
 
 /** Color de relleno según el nivel del subdominio. */
@@ -83,7 +91,10 @@ export function crearHexGrid(subdominios) {
     return raiz;
   }
 
-  const radio = 20;
+  // Radio 30 (antes 20): la celda pasa a medir 60 px de ancho, que es lo que
+  // hace falta para que un rótulo de 10 caracteres quepa dentro sin tocar la
+  // celda vecina.
+  const radio = 30;
   const pasoX = radio * 1.5; // separación horizontal (tapa plana)
   const pasoY = radio * Math.sqrt(3); // separación vertical
   const margen = radio + 8;

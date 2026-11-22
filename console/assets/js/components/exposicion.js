@@ -69,15 +69,22 @@ export async function render(contenedor) {
         el("div", { className: "check__num", texto: String(item.numero).padStart(2, "0") }),
         el(
           "div",
-          {},
-          el("div", { className: "check__titulo", texto: item.indicador }),
+          { className: "check__cuerpo" },
+          // El estado va en la misma línea que el indicador: en una columna
+          // fija a la derecha quedaba a ~950 px de su propio texto, y a
+          // 390 px el chip se salía de la celda y lo recortaba el panel.
+          el(
+            "div",
+            { className: "check__cabecera" },
+            el("div", { className: "check__titulo", texto: item.indicador }),
+            el(
+              "div",
+              { className: "check__estado" },
+              el("span", { className: `etiqueta etiqueta--${info.clase}`, texto: info.texto }),
+            ),
+          ),
           el("div", { className: "check__detalle", texto: `Dónde se busca: ${item.donde}` }),
           el("div", { className: "check__detalle", texto: `Severidad si se confirma: ${item.severidad}` }),
-        ),
-        el(
-          "div",
-          { className: "check__estado" },
-          el("span", { className: `etiqueta etiqueta--${info.clase}`, texto: info.texto }),
         ),
       ),
     );

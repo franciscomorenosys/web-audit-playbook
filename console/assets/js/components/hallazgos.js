@@ -150,7 +150,9 @@ export async function render(contenedor) {
 
   const buscador = document.createElement("input");
   buscador.type = "search";
-  buscador.placeholder = "Buscar en título, descripción, evidencia…";
+  // El rótulo anterior ("Buscar en título, descripción, evidencia…") no cabía
+  // en el campo y se leía cortado a media palabra.
+  buscador.placeholder = "Buscar en título o evidencia…";
   buscador.value = filtros.texto;
   buscador.setAttribute("aria-label", "Buscar hallazgos");
 

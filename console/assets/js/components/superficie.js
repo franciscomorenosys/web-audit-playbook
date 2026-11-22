@@ -59,6 +59,37 @@ function filaComponente(componente) {
   );
 }
 
+/**
+ * Encaja el hex-grid al dibujo real.
+ *
+ * El `viewBox` del hex-grid reserva un margen de 38 unidades por encima de
+ * la primera fila de celdas y termina antes que la última: el panel queda
+ * con una franja de aire muerto sobre el grid y con la última fila de
+ * hexágonos cortada por el borde. Recortar el `viewBox` al contenido
+ * dibujado deja el grid centrado en su panel, sin aire muerto arriba y sin
+ * celdas cortadas.
+ *
+ * @param {Element} panel Panel del hex-grid, ya montado en el documento:
+ *   `getBBox()` necesita que el SVG esté renderizado para medir el dibujo.
+ */
+function encajarHexGrid(panel) {
+  const svg = panel.querySelector(".hexpanel__svg");
+  if (!svg || typeof svg.getBBox !== "function") return;
+  const caja = svg.getBBox();
+  if (!caja || !caja.width || !caja.height) return;
+
+  const holgura = 8; // unidades del viewBox: aire mínimo alrededor del dibujo
+  const vista = svg.getAttribute("viewBox").split(/\s+/).map(Number);
+  const y = caja.y - holgura;
+  const fondo = caja.y + caja.height + holgura;
+  // El eje horizontal se conserva: recortar la caja no debe cambiar la
+  // escala del dibujo (ni el tamaño de los rótulos de cada celda).
+  svg.setAttribute(
+    "viewBox",
+    `${vista[0]} ${y.toFixed(2)} ${vista[2]} ${(fondo - y).toFixed(2)}`,
+  );
+}
+
 /** Renderiza la vista. */
 export async function render(contenedor) {
   const [score, resumen] = await Promise.all([api("/api/score"), api("/api/summary")]);
@@ -156,7 +187,7 @@ export async function render(contenedor) {
     "Superficie de subdominios",
     `${(score.subdominios || []).length} nombres en Certificate Transparency`,
     crearHexGrid(score.subdominios || []),
-    { sinCuerpo: true },
+    { sinCuerpo: true, clase: "panel--hex" },
   );
 
   // -- componentes ---------------------------------------------------------- //
@@ -237,7 +268,7 @@ export async function render(contenedor) {
     el(
       "div",
       { className: "rejilla rejilla--dial" },
-      el("div", { className: "revelar" }, panelDial, panelFormula),
+      el("div", { className: "revelar columna-fija" }, panelDial, panelFormula),
       el(
         "div",
         { className: "revelar" },
@@ -246,4 +277,8 @@ export async function render(contenedor) {
       ),
     ),
   );
+
+  // El hex-grid se encaja cuando ya está en el documento: `getBBox()`
+  // necesita el SVG renderizado para medir el dibujo real.
+  encajarHexGrid(panelHex);
 }

@@ -98,7 +98,7 @@ export function vacio(titulo, detalle) {
  *
  * @param {Array<{clave: string, titulo: string}>} columnas
  * @param {Array<object>} filas
- * @param {object} [opciones] `caption`, `tarjetas`, `alPulsarFila`, `filaClave`.
+ * @param {object} [opciones] `caption`, `tarjetas`, `alPulsarFila`, `filaClave`, `clase`.
  */
 export function tabla(columnas, filas, opciones = {}) {
   const thead = el("thead");
@@ -143,7 +143,11 @@ export function tabla(columnas, filas, opciones = {}) {
 
   const tabla = el(
     "table",
-    { className: `tabla${opciones.tarjetas ? " tabla--tarjetas" : ""}` },
+    {
+      className: `tabla${opciones.tarjetas ? " tabla--tarjetas" : ""}${
+        opciones.clase ? ` ${opciones.clase}` : ""
+      }`,
+    },
     opciones.caption ? el("caption", { texto: opciones.caption }) : null,
     thead,
     tbody,

@@ -51,6 +51,77 @@ demostración y lo dice en la barra superior.
 
 ---
 
+## Docker
+
+La consola se empaqueta para la VPS del auditor en
+[`Dockerfile`](Dockerfile) (base `python:3.13-slim`, usuario no-root,
+cero dependencias).
+
+### Construir
+
+```bash
+# Desde la RAÍZ del repositorio. OJO: el contexto es la raíz, no `console/`,
+# porque la imagen necesita `console/` Y `01-tooling/scripts/` (el toolchain
+# que la consola invoca para el score y para la demo).
+docker build -t web-audit-playbook/console:local -f console/Dockerfile .
+```
+
+El `.dockerignore` de la raíz es una lista blanca: sólo viajan `console/` y
+`01-tooling/scripts/`. `03-casos/` (la evidencia de clientes reales) **nunca
+entra en el contexto de build**.
+
+### Ejecutar
+
+```bash
+# La evidencia en SOLO LECTURA y el puerto publicado sólo en el loopback
+# del host: el acceso es por túnel SSH o VPN.
+docker run --rm \
+  -p 127.0.0.1:8787:8787 \
+  -v /opt/audit/evidencia:/data/evidencia:ro \
+  web-audit-playbook/console:local
+```
+
+Y la consola queda en `http://127.0.0.1:8787` por el túnel:
+
+```bash
+ssh -N -L 8787:127.0.0.1:8787 usuario@<ip-de-la-vps>
+```
+
+> **La evidencia va en SOLO LECTURA.** El montaje termina en `:ro`: la
+> consola no puede escribir ni borrar evidencia cruda, ni por error ni por un
+> bug. No es una convención: es el montaje.
+>
+> **El puerto tiene que quedar detrás de una VPN o de un túnel SSH.** La
+> consola **no implementa autenticación propia**: es un servidor HTTP de la
+> stdlib de Python. Publícalo **sólo** en `127.0.0.1` y accede por
+> `ssh -L` o por VPN. **Nunca en `0.0.0.0`.** (Ver
+> [`../deploy/README.md`](../deploy/README.md) §3.3 y
+> [`../deploy/hardening.md`](../deploy/hardening.md) §3.)
+
+### Qué monta el stack
+
+El `docker-compose.yml` de `deploy/` monta la evidencia en `/evidencia:ro` y
+sobrescribe el `command:` de la imagen (que usa `/data/evidencia`). El
+comportamiento es el mismo: **nunca en modo demo**, siempre leyendo un
+directorio de evidencia.
+
+### La demo dentro del contenedor
+
+El conjunto de demostración **no va en la imagen**: se genera en tiempo de
+ejecución con el propio toolchain.
+
+```bash
+docker compose -f ../deploy/docker-compose.yml run --rm --no-deps console \
+  python3 console/demo/generar_demo.py
+```
+
+Lo que se escribe se queda dentro del contenedor (desechable). Para
+conservarlo, monta un volumen sobre
+`/app/console/demo/evidencia`. Ver
+[`../deploy/README.md`](../deploy/README.md) §3.5.
+
+---
+
 ## Las ocho vistas
 
 Se navegan por **hash**, así que cada vista tiene URL propia y es
@@ -67,6 +138,20 @@ estado de fase.
 | 06 | `#/evidencia` | **EVIDENCIA** | Índice de ficheros: ruta, tamaño, sha256 corto, mtime y estado de redacción. Banner superior si hay algo sin verificar. |
 | 07 | `#/autorizacion` | **AUTORIZACIÓN** | El RoE: cliente, referencia, **ventana con cuenta atrás en vivo**, hosts permitidos (los que quedan fuera se marcan en rojo), métodos permitidos y el estado prominente **«FASE 2 BLOQUEADA — sin addendum firmado»**. |
 | 08 | `#/acciones` | **REGISTRO DE ACCIONES** | El `registro-de-acciones-fase-2.csv` como flujo tipo terminal. Las filas con `datos_tocados != ninguno` salen resaltadas. |
+
+---
+
+## Vista previa
+
+Tres capturas del **modo demostración** (conjunto sintético, ningún dato de un
+cliente real): la superficie con su score y su hex-grid, el RoE con su ventana
+de validez y la tabla de hallazgos.
+
+![Vista 01 SUPERFICIE](docs/vista-previa/superficie.png)
+
+![Vista 07 AUTORIZACIÓN](docs/vista-previa/autorizacion.png)
+
+![Vista 02 HALLAZGOS](docs/vista-previa/hallazgos.png)
 
 ---
 
@@ -163,6 +248,7 @@ console/
   server.py                  CLI + http.server: UI estática y /api/*
   api.py                     carga y normaliza la evidencia
   index.html
+  Dockerfile                 imagen de la VPS (python:3.13-slim, usuario no-root)
   assets/css/console.css     tokens, componentes, textura, animaciones
   assets/js/
     app.js                   arranque, barra, navegación

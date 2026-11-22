@@ -9,13 +9,28 @@
  * Convenciones angulares: 0° = las 12 en punto, Growing en sentido horario.
  */
 
-import { banda as colorBanda } from "../format.js";
-
 const CX = 200;
 const CY = 180;
 const R = 132;
 const INICIO = 225; // 0 del índice: abajo a la izquierda
 const RECORRIDO = 270; // barrido total, sentido horario
+
+/**
+ * Color legible del NOMBRE de la banda.
+ *
+ * El color de la banda es el del arco: como texto, "Severo" salía en
+ * `--banda-severo` (#a83238) a 2.88:1 sobre el panel, ilegible. Aquí se usa
+ * una versión aclarada del mismo tono: el nombre sigue reconociéndose como
+ * el de su banda y sí se lee (7.26:1 o más).
+ */
+const COLOR_BANDA_TEXTO = {
+  Bajo: "#63c47c",
+  Moderado: "#d6bd63",
+  Alto: "#ffa630",
+  "Crítico": "#ff7a7e",
+  Crìtico: "#ff7a7e",
+  Severo: "#ff9a9d",
+};
 
 // Espacio de nombres XML de SVG. Se compone en tiempo de ejecución para que
 // el rastreo de "recursos externos" sólo encuentre URLs de red: un
@@ -172,7 +187,10 @@ export function crearDial({ valor, banda, evaluable }) {
 
   const bandaTexto = svgEl("text", { class: "dial__centro-banda", x: CX, y: CY + 92 });
   bandaTexto.textContent = banda || "No evaluable";
-  bandaTexto.setAttribute("fill", colorBanda(banda).color);
+  bandaTexto.setAttribute(
+    "fill",
+    COLOR_BANDA_TEXTO[banda] || (banda ? "var(--texto-medio)" : "var(--texto-tenue)"),
+  );
   svg.append(bandaTexto);
 
   raiz.append(svg);

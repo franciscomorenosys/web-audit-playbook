@@ -134,11 +134,21 @@
   --line: #1e232b;
   --line-fuerte: #2b313a;
 
-  /* Texto */
+  /* Texto
+     Escala de cuatro grises calibrados contra el fondo real computado de los
+     paneles (`--surface-2` = #12151a, el más claro sobre el que se escribe):
+       --texto-tenuisimo  4.77:1
+       --texto-tenue      5.88:1
+       --texto-medio      7.24:1
+       --texto           13.14:1
+     Los cuatro superan WCAG AA (4.5:1). El salto visual entre los dos
+     niveles más apagados lo sostienen el tamaño y el peso, no el color: a
+     10 px un gris de 4.8:1 ya no se lee, y en una consola el micro-rótulo
+     es precisamente lo que el auditor usa para saber qué está mirando. */
   --texto: #d6dbe1;
   --texto-medio: #9aa4b0;
-  --texto-tenue: #6b7480;
-  --texto-tenuisimo: #474f59;
+  --texto-tenue: #8a939f;
+  --texto-tenuisimo: #7a838f;
 
   /* Acento dominante: ámbar señal */
   --ambar: #ffa630;
@@ -148,6 +158,9 @@
 
   /* Semánticos: mucho menos peso visual */
   --rojo: #e5484d;
+  /* Variante legible del rojo: el texto rojo sobre el tinte rojo del chip
+     daba 4.38:1. Con esta, 6.81:1. Los bordes siguen usando --rojo. */
+  --rojo-claro: #ff7a7e;
   --rojo-tenue: rgba(229, 72, 77, 0.12);
   --verde: #3fb950;
   --verde-tenue: rgba(63, 185, 80, 0.12);
@@ -513,7 +526,7 @@ samp {
 }
 
 .aviso-critico strong {
-  color: var(--rojo);
+  color: var(--rojo-claro);
   font-family: var(--fuente-display);
   letter-spacing: 0.12em;
   margin-right: var(--s-2);
@@ -587,6 +600,18 @@ samp {
   align-items: start;
 }
 
+/* Columna izquierda de SUPERFICIE (dial + fórmula): queda fija al hacer
+   scroll. En una consola densa el score no puede hundirse bajo el pliegue:
+   mientras el auditor recorre el desglose de componentes, el dial y la
+   fórmula siguen a la vista. La columna pegajosa es el ítem de la rejilla
+   (`align-items: start`), así que su caja de contención es el área de la
+   fila —de la altura de la columna derecha— y puede recorrerla entera.
+   El `top` deja libre la barra y la navegación, que también son pegajosas. */
+.rejilla--dial > .columna-fija {
+  position: sticky;
+  top: calc(var(--alto-barra) + 34px);
+}
+
 .rejilla--principal {
   grid-template-columns: minmax(0, 1.9fr) minmax(280px, 1fr);
   align-items: start;
@@ -634,7 +659,7 @@ samp {
 }
 
 .etiqueta--critico {
-  color: var(--rojo);
+  color: var(--rojo-claro);
   border-color: rgba(229, 72, 77, 0.5);
   background: var(--rojo-tenue);
 }
@@ -672,7 +697,7 @@ samp {
 }
 
 .etiqueta--bloqueo {
-  color: var(--rojo);
+  color: var(--rojo-claro);
   border-color: var(--rojo);
   background: var(--rojo-tenue);
   font-weight: 700;
@@ -741,11 +766,22 @@ samp {
   text-transform: none;
 }
 
+/* El buscador se quedaba en 167 px y su placeholder se cortaba a media
+   palabra ("Buscar en título, ("). 260 px es lo que hace falta para que
+   quepa el rótulo entero. */
+.campo input[type="text"],
+.campo input[type="search"] {
+  width: 260px;
+  max-width: 100%;
+}
+
 .campo select {
-  padding-right: var(--s-4);
+  /* 16 px de relleno dejaban la flecha encima de la última letra
+     ("Severidad: todas"). 24 px y la flecha más a la izquierda lo evitan. */
+  padding-right: var(--s-5);
   background-image: linear-gradient(45deg, transparent 50%, var(--texto-tenue) 50%),
     linear-gradient(135deg, var(--texto-tenue) 50%, transparent 50%);
-  background-position: calc(100% - 12px) 50%, calc(100% - 7px) 50%;
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
 }
@@ -794,7 +830,7 @@ samp {
 }
 
 .boton--peligro:hover {
-  color: var(--rojo);
+  color: var(--rojo-claro);
   border-color: rgba(229, 72, 77, 0.6);
   background: var(--rojo-tenue);
 }
@@ -806,6 +842,20 @@ samp {
 .tabla-envoltura {
   overflow-x: auto;
   scrollbar-width: thin;
+  /* Sombra de scroll: cuando la tabla es más ancha que el panel, aparece una
+     sombra en el borde por el que queda contenido fuera de pantalla. Sin esta
+     señal, en macOS (scrollbars de overlay) el auditor ve una tabla truncada
+     y no tiene forma de saber que le faltan columnas. La capa "local" se
+     mueve con el contenido y la capa "scroll" se queda pegada al borde. */
+  background:
+    linear-gradient(to right, var(--surface) 30%, rgba(14, 16, 19, 0))
+      left center / 16px 100% no-repeat local,
+    linear-gradient(to left, var(--surface) 30%, rgba(14, 16, 19, 0))
+      right center / 16px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0))
+      left center / 16px 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0))
+      right center / 16px 100% no-repeat scroll;
 }
 
 table.tabla {
@@ -846,6 +896,24 @@ table.tabla tbody td {
   color: var(--texto-medio);
 }
 
+/* Secret Register: doce columnas en un panel. A 1600 px se salían 121 px
+   (las columnas OWNER y EVIDENCIA quedaban fuera de pantalla sin aviso).
+   Esta variante compacta el relleno y acota las celdas largas para que las
+   doce columnas quepan sin scroll horizontal. */
+table.tabla--registro th,
+table.tabla--registro td {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+table.tabla--registro .celda-truncar {
+  max-width: 210px;
+}
+
+table.tabla--registro tbody td:nth-child(1) {
+  white-space: nowrap;
+}
+
 table.tabla tbody tr {
   transition: background var(--transicion);
 }
@@ -869,7 +937,10 @@ table.tabla td .mono {
 }
 
 .celda-truncar {
-  max-width: 340px;
+  /* 340 px era un tope absoluto: en HALLAZGOS la columna mide 627 px y la
+     descripción se cortaba a 340 dejando 287 px de celda vacíos. 560 px
+     aprovecha la columna sin robándole sitio a las de al lado. */
+  max-width: 560px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -994,10 +1065,21 @@ table.tabla td .mono {
   overflow: hidden;
 }
 
+/* El hex-grid va centrado verticalmente en su panel: el cuerpo del panel
+   reparte el aire sobrante en lugar de dejar una franja muerta entre la
+   cabecera y la primera fila de celdas. */
+.panel--hex .panel__cuerpo--liso {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .hexpanel__svg {
   display: block;
   width: 100%;
-  max-width: 560px;
+  /* Antes 560 px: el panel mide ~1000 px y el hex-grid dejaba ~440 px de
+     vacío a cada lado. */
+  max-width: 720px;
   margin: 0 auto;
   height: auto;
 }
@@ -1346,7 +1428,7 @@ table.tabla td .mono {
 }
 
 .cuenta__valor[data-critico="true"] {
-  color: var(--rojo);
+  color: var(--rojo-claro);
 }
 
 .cuenta__unidad {
@@ -1384,7 +1466,7 @@ table.tabla td .mono {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--rojo);
+  color: var(--rojo-claro);
 }
 
 .fase2[data-bloqueada="false"] .fase2__texto {
@@ -1402,7 +1484,7 @@ table.tabla td .mono {
 
 .check {
   display: grid;
-  grid-template-columns: 26px minmax(0, 1fr) 128px;
+  grid-template-columns: 26px minmax(0, 1fr);
   gap: var(--s-2);
   align-items: start;
   padding: var(--s-2) var(--s-3);
@@ -1418,6 +1500,20 @@ table.tabla td .mono {
   font-size: var(--fs-micro);
   color: var(--texto-tenuisimo);
   padding-top: 2px;
+}
+
+/* Indicador y estado en la misma línea: el chip iba en una columna fija a
+   128 px de la derecha y quedaba a ~950 px del texto que califica. */
+.check__cabecera {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+
+.check__cabecera .check__estado {
+  text-align: left;
+  flex: none;
 }
 
 .check__titulo {
@@ -1527,7 +1623,7 @@ table.tabla td .mono {
 }
 
 .metrica--rojo .metrica__valor {
-  color: var(--rojo);
+  color: var(--rojo-claro);
 }
 
 .metrica--verde {
@@ -1595,6 +1691,14 @@ table.tabla td .mono {
   }
   .rejilla--3 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  /* En una columna no hay a qué pegarse: el dial fluye con el documento y
+     el sticky se desactiva. */
+  .rejilla--dial > .columna-fija {
+    position: static;
   }
 }
 
@@ -1670,6 +1774,11 @@ table.tabla td .mono {
   .celda-truncar {
     max-width: none;
     white-space: normal;
+  }
+
+  .campo input[type="text"],
+  .campo input[type="search"] {
+    width: 100%;
   }
 
   .afirmaciones {
