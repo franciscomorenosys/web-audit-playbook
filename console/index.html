@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="dark">
+  <title>Consola de Operaciones de Seguridad</title>
+  <meta name="description" content="Consola interna de operaciones de seguridad: superficie de ataque, hallazgos, registro de secretos, superficie de API, indicadores de compromiso, evidencia, autorización y registro de acciones.">
+  <!-- Sin CDN, sin fuentes remotas, sin analítica: la consola funciona 100 % offline. -->
+  <link rel="stylesheet" href="/assets/css/console.css">
+</head>
+<body>
+  <a class="skip-link" href="#vista">Saltar al contenido principal</a>
+
+  <!-- Textura de sala de operaciones: scanlines + grano. Sólo decorativo. -->
+  <div class="textura" aria-hidden="true"></div>
+
+  <header class="barra" role="banner">
+    <div class="barra__marca">
+      <span class="barra__glifo" aria-hidden="true"></span>
+      <span class="barra__titulo">Consola de Operaciones</span>
+      <span class="barra__sub" id="barra-sesion">cargando…</span>
+    </div>
+    <div class="barra__estado" id="barra-estado" role="status" aria-live="polite"></div>
+  </header>
+
+  <div class="aviso-sintetico" id="aviso-sintetico" role="note" hidden>
+    <strong>CONJUNTO SINTÉTICO.</strong>
+    <span>Todos los datos de esta sesión son generados por el propio toolchain sobre fixtures. No proceden de ningún cliente real.</span>
+  </div>
+
+  <div class="aviso-critico" id="aviso-critico" role="alert" hidden></div>
+
+  <nav class="nav" id="nav" aria-label="Secciones de la consola"></nav>
+
+  <main class="vista" id="vista" tabindex="-1">
+    <div class="cargando" role="status">
+      <span class="cargando__punto" aria-hidden="true"></span>
+      Leyendo evidencia…
+    </div>
+  </main>
+
+  <footer class="pie" role="contentinfo">
+    <p>
+      Consola interna. Sólo lee evidencia ya redactada.
+      <strong>No sustituye a la revisión humana del auditor.</strong>
+    </p>
+    <p class="pie__meta" id="pie-meta"></p>
+  </footer>
+
+  <script type="module" src="/assets/js/app.js"></script>
+</body>
+</html>

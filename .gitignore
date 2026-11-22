@@ -36,6 +36,24 @@
 evidencia/
 evidence/
 
+# El conjunto de DEMOSTRACIÓN de la consola (`console/demo/evidencia/`) es
+# sintético, pero se versiona igual: fuera de git. Motivo — el directorio
+# `crudo/` contiene material **SIN REDACTAR a propósito** (credenciales
+# ficticias sin enmascarar) para poder demostrar la regla de redacción de la
+# consola: lo que no tiene estado de redacción verificable queda oculto por
+# defecto. Publicarlo, aunque sea sintético, enseñaría el patrón exacto del
+# material que la regla debe esconder, y confunde el criterio.
+#
+# No es material que haya que regenerar a mano: `console/demo/generar_demo.py`
+# reconstruye todo el directorio ejecutando el propio toolchain sobre los
+# fixtures del repo y un sitio efímero en 127.0.0.1.
+#
+#   python3 console/demo/generar_demo.py
+#
+# La regla es explícita (no sólo la genérica `evidencia/` de arriba) para que
+# siga valiendo aunque aquella se relaje.
+/console/demo/evidencia/
+
 # Resultados tabulares de escaneo y volcados de hallazgos.
 # (Los que viven dentro de 03-casos/ ya quedan fuera por la regla de arriba;
 #  estas reglas cubren el caso de que un caso se copie fuera de 03-casos/.)
@@ -76,6 +94,11 @@ authorization-*.json
 .env.*
 **/.env
 **/.env.*
+# ... pero las PLANTILLAS de ejemplo sí se versionan: son la forma documentada
+# de declarar qué variables existen, y sólo contienen valores de fábrica.
+# (Mismo criterio que `authorization.example.json` frente a `authorization.json`.)
+!**/.env.example
+!**/.env.*.example
 *.pem
 *.key
 *.p12

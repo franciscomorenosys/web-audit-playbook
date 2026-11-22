@@ -1,0 +1,308 @@
+# =============================================================================
+# Web Audit Playbook — stack de la VPS autoalojada
+# =============================================================================
+#
+# Qué es esto
+# -----------
+# El entorno donde corre el stack interno de la auditoría: el runtime de LLM
+# local, la consola interna de operaciones y el almacén de hallazgos.
+#
+# La regla que gobierna todo este fichero
+# ---------------------------------------
+#   NADA DE LO QUE DEL CLIENTE SALE DE ESTA MÁQUINA.
+#
+# Eso se cumple por construcción, no por promesa:
+#   1. Ningún puerto de administración se publica en 0.0.0.0. Los puertos
+#      publicados se enlazan a 127.0.0.1: sólo son accesibles por túnel SSH
+#      o VPN desde la red del auditor.
+#   2. La API de Ollama NO tiene autenticación nativa. Su control es el
+#      binding: dentro del contenedor escucha en el namespace del contenedor
+#      y el puerto NO se publica al host (ver `expose`, no `ports`).
+#   3. El LLM no tiene red hacia el exterior más allá del `pull` de modelos,
+#      y no tiene herramientas.
+#   4. La evidencia cruda se monta en SOLO LECTURA y la consola nunca la
+#      escribe: sólo lee la copia saneada.
+#   5. La base de datos es SQLite en un volumen con nombre. No hay servidor
+#      de base de datos: es superficie de ataque que no necesitamos.
+#
+# Documentación: deploy/README.md (despliegue) y deploy/hardening.md
+# (endurecimiento). Decisiones: PLAN-MAESTRO.md §4, §5, §6 y §10.
+#
+# -----------------------------------------------------------------------------
+
+name: web-audit-playbook
+
+# ---------------------------------------------------------------------------
+# Anclas reutilizables
+# ---------------------------------------------------------------------------
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-hardening: &hardening
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+# ---------------------------------------------------------------------------
+# Servicios
+# ---------------------------------------------------------------------------
+services:
+
+  # -------------------------------------------------------------------------
+  # ollama — runtime del LLM local
+  # -------------------------------------------------------------------------
+  # Es el ÚNICO punto del stack que habla con un LLM, y sólo con evidencia ya
+  # redactada por pii_redact.py. Decisiones y variables: research/06 §8.2.
+  # -------------------------------------------------------------------------
+  ollama:
+    image: ${OLLAMA_IMAGE:-ollama/ollama:PIN-DIGEST-AQUI}
+    container_name: wap-ollama
+    restart: unless-stopped
+    # GPU OPCIONAL, por variable de entorno.
+    #   - NVIDIA_VISIBLE_DEVICES=none  → sin GPU (por defecto, VPS CPU)
+    #   - NVIDIA_VISIBLE_DEVICES=all   → todas las GPUs del host
+    #   - NVIDIA_VISIBLE_DEVICES=0     → sólo la GPU 0
+    # Requiere el NVIDIA Container Toolkit instalado en el host. `cap_add: gpu`
+    # es inofensivo en un host sin NVIDIA: el contenedor simplemente no recibe
+    # dispositivos. `OLLAMA_NUM_GPU` (0 = todo en CPU) es el mando del runtime.
+    cap_add:
+      - gpu
+    environment:
+      # Dentro del namespace del contenedor hay que escuchar en 0.0.0.0 para que
+      # los otros contenedores del stack reached al servicio. La protección NO es
+      # este binding: es que el puerto NO se publica al host (no hay `ports:`).
+      # Si alguien añade `ports: - "11434:11434"`, se rompe el perímetro.
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_NO_CLOUD: "1"                    # desactiva los modelos cloud de Ollama
+      OLLAMA_CONTEXT_LENGTH: ${OLLAMA_CONTEXT_LENGTH:-8192}
+      OLLAMA_KV_CACHE_TYPE: ${OLLAMA_KV_CACHE_TYPE:-q8_0}
+      OLLAMA_FLASH_ATTENTION: ${OLLAMA_FLASH_ATTENTION:-1}
+      OLLAMA_MAX_LOADED_MODELS: ${OLLAMA_MAX_LOADED_MODELS:-2}
+      OLLAMA_NUM_PARALLEL: ${OLLAMA_NUM_PARALLEL:-1}
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-5m}
+      OLLAMA_ORIGINS: ${OLLAMA_ORIGINS:-http://127.0.0.1:8787}
+      OLLAMA_NUM_GPU: ${OLLAMA_NUM_GPU:-0}
+      NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-none}
+      NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-compute,utility}
+      TZ: ${TZ:-America/Mexico_City}
+    # `expose` documenta; NO publica. El puerto no sale del host.
+    expose:
+      - "11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      - wap_net
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging: *logging
+    deploy:
+      resources:
+        limits:
+          memory: ${OLLAMA_MEM_LIMIT:-6g}
+    <<: *hardening
+
+  # -------------------------------------------------------------------------
+  # console — la consola interna de operaciones
+  # -------------------------------------------------------------------------
+  # Panel de encargos, tabla de hallazgos, visor de evidencia saneada, editor
+  # de informe y terminal. Es INTERFAZ, no criterio: no decide severidades y no
+  # escribe evidencia cruda.
+  #
+  # NOTA SOBRE LA AUTENTICACIÓN: la versión actual de la consola NO implementa
+  # autenticación propia. Por eso el puerto se publica EXCLUSIVAMENTE en
+  # 127.0.0.1 del host: el acceso es por túnel SSH o VPN, y nadie llega a la
+  # consola desde internet. `CONSOLE_TOKEN` queda preparado para la versión con
+  # sesión (v0.2). Mientras tanto, el control es el binding + el túnel, y
+  # ambos están verificados en deploy/hardening.md §10.
+  # -------------------------------------------------------------------------
+  console:
+    image: ${CONSOLE_IMAGE:-web-audit-playbook/console:local}
+    # La consola es la app del repo (`console/`). Se construye desde ahí.
+    # Si `console/Dockerfile` no existe todavía, construye la imagen a mano
+    # (ver deploy/README.md §3.1) y quita este bloque `build:`.
+    build:
+      context: ${CONSOLE_CONTEXT:-../console}
+      dockerfile: Dockerfile
+    container_name: wap-console
+    restart: unless-stopped
+    depends_on:
+      ollama:
+        condition: service_healthy
+    command:
+      - python3
+      - server.py
+      - --evidence
+      - /evidencia
+      - --port
+      - "8787"
+      - --host
+      - 0.0.0.0
+      - --no-open
+    environment:
+      # --- almacén de hallazgos ---
+      # SQLite en un volumen con nombre. Sin servidor de base de datos.
+      # Justificación completa en deploy/README.md §9.
+      DATABASE_PATH: /db/hallazgos.db
+      # --- evidencia ---
+      # Montada en SOLO LECTURA: la consola no puede escribir ni borrar
+      # evidencia cruda, ni por error ni por un bug.
+      EVIDENCE_ROOT: /evidencia
+      EVIDENCE_SANITIZED_SUBDIR: ${EVIDENCE_SANITIZED_SUBDIR:-evidencia-sanitizada}
+      # --- LLM ---
+      OLLAMA_BASE_URL: http://ollama:11434
+      LLM_MODEL: ${LLM_MODEL:-qwen3.5:9b}
+      LLM_CONTEXT_LENGTH: ${OLLAMA_CONTEXT_LENGTH:-8192}
+      LLM_TIMEOUT_S: ${LLM_TIMEOUT_S:-180}
+      # --- autenticación de la consola ---
+      # Token local. La consola nunca se expone sin él.
+      CONSOLE_TOKEN: ${CONSOLE_TOKEN:-CAMBIAR_ESTE_VALOR}
+      # --- política de la puerta del LLM ---
+      # El LLM no decide: su salida es una propuesta. La severidad la calcula el
+      # auditor. 'revalidate' = toda salida se re-redacta antes de escribirse.
+      LLM_OUTPUT_POLICY: ${LLM_OUTPUT_POLICY:-revalidate}
+      TZ: ${TZ:-America/Mexico_City}
+    # Binding a loopback del HOST: accesible por túnel SSH (`ssh -L`) o VPN.
+    # Nunca 0.0.0.0. Ver deploy/README.md §8 y deploy/hardening.md §3.
+    ports:
+      - "127.0.0.1:${CONSOLE_PORT:-8787}:8787"
+    volumes:
+      - wap_db:/db
+      - ${EVIDENCE_HOST_DIR:-../03-casos}:/evidencia:ro
+    networks:
+      - wap_net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8787/api/health >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging: *logging
+    deploy:
+      resources:
+        limits:
+          memory: ${CONSOLE_MEM_LIMIT:-1g}
+    <<: *hardening
+
+  # -------------------------------------------------------------------------
+  # open-webui — interfaz de chat con el modelo (OPCIONAL, perfil `ui`)
+  # -------------------------------------------------------------------------
+  # Perfil `ui`: no arranca con `docker compose up` normal. Se activa con
+  #   --profile ui
+  # Aviso de licencia: "Open WebUI License" (BSD-3 + cláusula anti-branding).
+  # Es INTERFAZ INTERNA del auditor; NUNCA se reempaqueta ni se revende, y no
+  # entra en la consola que sí se construye. Ver research/06 §7.3.
+  # -------------------------------------------------------------------------
+  open-webui:
+    image: ${OPENWEBUI_IMAGE:-ghcr.io/open-webui/open-webui:PIN-DIGEST-AQUI}
+    container_name: wap-openwebui
+    profiles: ["ui"]
+    restart: unless-stopped
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      WEBUI_AUTH: ${OPENWEBUI_AUTH:-True}
+      WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY:-CAMBIAR_ESTE_VALOR}
+      ENABLE_OLLAMA_API: "True"
+      # Telemetría fuera: una VPS de cliente no reporta a terceros.
+      DO_NOT_TRACK: "true"
+      ANONYMIZED_TELEMETRY: "false"
+      SCARF_NO_ANALYTICS: "true"
+      TZ: ${TZ:-America/Mexico_City}
+    ports:
+      - "127.0.0.1:${OPENWEBUI_PORT:-3000}:8080"
+    volumes:
+      - openwebui_data:/app/backend/data
+    networks:
+      - wap_net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging: *logging
+    deploy:
+      resources:
+        limits:
+          memory: ${OPENWEBUI_MEM_LIMIT:-2g}
+    <<: *hardening
+
+  # -------------------------------------------------------------------------
+  # db — operación sobre el almacén de hallazgos (SQLite en volumen)
+  # -------------------------------------------------------------------------
+  # DECISIÓN: SQLite, no Postgres. Ver deploy/README.md §«Por qué SQLite y no
+  # Postgres». En resumen: un único auditor (o dos) escribiendo un volumen de
+  # decenas de miles de filas no necesita un servidor de base de datos, y un
+  # servidor de base de datos es superficie de ataque, un proceso más que
+  # mantener y un puerto más que cerrar.
+  #
+  # Este servicio NO es un servidor de base de datos: es la utilidad de
+  # operación sobre el volumen `wap_db` (sqlite3 para backup, restore y
+  # verificación). Vive en el perfil `tools`, así que no arranca por defecto:
+  #   docker compose --profile tools run --rm db sqlite3 /db/hallazgos.db
+  # -------------------------------------------------------------------------
+  db:
+    image: ${DB_IMAGE:-alpine:3.20}
+    container_name: wap-db
+    profiles: ["tools"]
+    restart: "no"
+    command:
+      - sh
+      - -c
+      - 'echo "wap-db: contenedor de operación sobre el volumen SQLite. No corre un servidor de base de datos. Uso: make db-shell" && sleep infinity'
+    volumes:
+      - wap_db:/db
+    networks:
+      - wap_net
+    logging: *logging
+    deploy:
+      resources:
+        limits:
+          memory: ${DB_MEM_LIMIT:-256m}
+    <<: *hardening
+
+# ---------------------------------------------------------------------------
+# Volúmenes
+# ---------------------------------------------------------------------------
+volumes:
+  # Pesos de los modelos. ~4-7 GB por modelo Q4_K_M. Es lo más pesado del stack:
+  # es el motivo del perfil de 60 GB de disco.
+  ollama_models:
+    name: ${VOLUME_PREFIX:-wap}_ollama_models
+
+  # Base de hallazgos SQLite (modo WAL). Contiene SOLO evidencia saneada y
+  # referencias al sha256 de la evidencia cruda. Ver PLAN-MAESTRO.md §15,
+  # decisión #7: el hash sí, el contenido no.
+  wap_db:
+    name: ${VOLUME_PREFIX:-wap}_db
+
+  # Datos de Open WebUI (perfil `ui`): usuarios, chats, configuración.
+  openwebui_data:
+    name: ${VOLUME_PREFIX:-wap}_openwebui_data
+
+# ---------------------------------------------------------------------------
+# Redes
+# ---------------------------------------------------------------------------
+networks:
+  # Red privada del stack. NO es la red del host: los servicios se hablan entre
+  # sí por aquí y no se publican puertos de administración a 0.0.0.0.
+  #
+  # Sobre el egress: por defecto Docker da salida a esta red. El bloqueo de
+  # salida (allow-list para DNS, NTP y el registro de modelos) se hace en el
+  # FIREWALL DEL HOST — ver deploy/hardening.md §3. Si se quiere que ni la
+  # red Docker tenga salida, ponle `internal: true`; entonces el `pull` de
+  # modelos deja de funcionar y hay que pasar al modo «todo dentro de sus
+  # instalaciones» (llama.cpp con `--offline`, research/06 §5.6).
+  wap_net:
+    name: ${VOLUME_PREFIX:-wap}_net
+    driver: bridge

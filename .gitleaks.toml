@@ -83,3 +83,57 @@ regexes = [
   '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJzdWIiOiJleGFtcGxvIn0\.EJEMPLOFIRMA0000''',
   '''postgresql://usuario_ejemplo:clave_ejemplo@db\.ejemplo-interno\.mx:5432/clinica_ejemplo''',
 ]
+
+
+# ---------------------------------------------------------------------------
+#  3. Pruebas de la consola interna
+# ---------------------------------------------------------------------------
+# `console/tests/test_console.py` comprueba que la API de la consola NUNCA
+# devuelve el valor completo de un secreto. Para que esa aserción tenga
+# contenido, el test escribe literalmente la clave de ejemplo canónica de AWS
+# (`AKIAIOSFODNN7EXAMPLE`, la de la documentación de AWS) dentro de un
+# `assertNotIn`. El valor no existe en ningún proveedor: es el mismo valor que
+# ya declara el bloque 1 de esta allowlist.
+#
+# La allowlist es por RUTA: sólo exime a este fichero de test, y sólo para el
+# valor concreto de abajo. Cualquier otro secreto, en este u otro fichero,
+# sigue haciendo fallar la CI.
+[[allowlists]]
+description = "Secreto sintético del test de la consola (clave de ejemplo canónica de AWS)"
+paths = [
+  '''(?i)console/tests/test_console\.py''',
+]
+regexTarget = "secret"
+regexes = [
+  '''AKIAIOSFODNN7EXAMPLE''',
+]
+
+
+# ---------------------------------------------------------------------------
+#  4. Generador de la demostración de la consola
+# ---------------------------------------------------------------------------
+# `console/demo/generar_demo.py` levanta un sitio sintético en 127.0.0.1 para
+# que la sonda `probe_exposure.py` tenga algo que encontrar. Las respuestas de
+# ese sitio llevan credenciales **ficticias** —son el material que la regla
+# de redacción de la consola tiene que saber esconder—, y el propio código
+# lo dice en el nombre del valor (`CLAVE_SINTETICA_NO_USABLE_0001`,
+# `SINTETICO0000`).
+#
+# Los valores no existen en ningún proveedor: `sk_test_SINTETICO…` no es una
+# clave de Stripe válida (Stripe no emite claves con el literal `SINTETICO`),
+# y `CLAVE_SINTETICA_NO_USABLE_0001` se declara no usable en su propio texto.
+#
+# Allowlist por RUTA y por VALOR: sólo exime a este fichero y sólo a estos
+# tres valores. Cualquier otro secreto, en este u otro fichero, sigue
+# haciendo fallar la CI.
+[[allowlists]]
+description = "Credenciales sintéticas del generador de la demo de la consola"
+paths = [
+  '''(?i)console/demo/generar_demo\.py''',
+]
+regexTarget = "secret"
+regexes = [
+  '''CLAVE_SINTETICA_NO_USABLE_0001''',
+  '''sk_test_SINTETICO0000''',
+  '''sk_test_SINTETICO0000000000000000000000''',
+]
