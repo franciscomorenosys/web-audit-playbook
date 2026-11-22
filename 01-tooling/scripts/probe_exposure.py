@@ -18,6 +18,12 @@ Garantías:
   página 404 de referencia, la ruta se marca ``soft_404`` y **no** cuenta como
   exposición. Sin esto, cualquier sitio que devuelva la misma página de error
   para todo genera cientos de falsos positivos.
+* **Lectura acotada y declarada**: ``length`` son los **bytes leídos** (tope
+  ``max_bytes``, 1 MB por defecto), no el tamaño real del fichero. El tamaño
+  que declara el servidor va aparte en ``content_length_header`` (alias
+  ``length_reported``) y ``truncated`` dice si la lectura quedó incompleta. Si
+  además la ruta está expuesta, el veredicto es ``exposed_truncated``: el
+  fichero es **mayor** de lo que se leyó.
 
 Uso::
 
@@ -146,8 +152,12 @@ SAFE_BODY_PATHS: frozenset[str] = frozenset(
 )
 
 TSV_HEADER = (
-    "host\tpath\tcode\tcontent_type\tlength\tsha256\tsoft_404\tverdict\tseverity"
+    "host\tpath\tcode\tcontent_type\tlength\tcontent_length_header\tsha256\t"
+    "soft_404\ttruncated\tverdict\tseverity"
 )
+
+#: Veredictos que cuentan como «la ruta está expuesta».
+EXPOSED_VERDICTS: frozenset[str] = frozenset({"expuesto", "exposed_truncated"})
 
 
 @dataclass(frozen=True)
@@ -165,7 +175,15 @@ class PathProfile:
 
 @dataclass
 class ProbeResult:
-    """Resultado de sondear una ruta."""
+    """Resultado de sondear una ruta.
+
+    Ojo con ``length``: es el **número de bytes leídos**, no el tamaño real
+    del fichero. Con ``max_bytes`` (1 MB por defecto) una copia de seguridad de
+    48 MB aparece como ``length=1000000`` y su ``sha256`` es el del primer
+    megabyte. El tamaño **declarado** por el servidor va aparte, en
+    :attr:`content_length_header` (alias :attr:`length_reported`), y
+    :attr:`truncated` dice si la lectura se cortó por el tope.
+    """
 
     host: str
     path: str
@@ -179,6 +197,15 @@ class ProbeResult:
     final_url: str = ""
     error: str = ""
     body_saved: str = ""
+    #: ``Content-Length`` declarado por el servidor (``None`` si no viene).
+    content_length_header: int | None = None
+    #: ¿Se alcanzó ``max_bytes`` y la lectura quedó incompleta?
+    truncated: bool = False
+
+    @property
+    def length_reported(self) -> int | None:
+        """Tamaño **declarado** por el servidor (alias de ``content_length_header``)."""
+        return self.content_length_header
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -187,8 +214,11 @@ class ProbeResult:
             "code": self.code,
             "content_type": self.content_type,
             "length": self.length,
+            "content_length_header": self.content_length_header,
+            "length_reported": self.length_reported,
             "sha256": self.sha256,
             "soft_404": self.soft_404,
+            "truncated": self.truncated,
             "verdict": self.verdict,
             "severity": self.severity,
             "final_url": self.final_url,
@@ -202,17 +232,45 @@ class ProbeResult:
 # --------------------------------------------------------------------------- #
 
 
-def classify(code: int, sha256: str, fingerprint: str | None, is_head: bool) -> tuple[str, bool]:
+def _parse_content_length(value: str) -> int | None:
+    """Interpreta el ``Content-Length`` declarado por el servidor.
+
+    Devuelve ``None`` si la cabecera no viene o no es un entero válido (un
+    servidor puede mandar cualquier cosa; no vale la pena mentir en el
+    informe).
+    """
+    text = (value or "").strip()
+    if not text:
+        return None
+    try:
+        number = int(text)
+    except ValueError:
+        return None
+    return number if number >= 0 else None
+
+
+def classify(
+    code: int,
+    sha256: str,
+    fingerprint: str | None,
+    is_head: bool,
+    truncated: bool = False,
+) -> tuple[str, bool]:
     """Determina el veredicto de una respuesta.
 
     Devuelve ``(verdict, soft_404)``.
+
+    Si la lectura quedó **truncada** por ``max_bytes`` y la ruta está
+    expuesta, el veredicto es ``exposed_truncated``: el fichero es **mayor**
+    de lo que se leyó y el auditor tiene que saberlo antes de dar el
+    hallazgo por cerrado.
     """
     if fingerprint is not None and not is_head and sha256 == fingerprint:
         # Mismo cuerpo que la página 404 de referencia → NO es una exposición.
         if code in (200, 201, 204):
             return "soft_404", True
     if 200 <= code < 300:
-        return "expuesto", False
+        return ("exposed_truncated" if truncated else "expuesto"), False
     if code in (401, 403):
         return "protegido", False
     if code == 404:
@@ -321,16 +379,23 @@ def probe(
                 continue
 
             verdict, soft_404 = classify(
-                response.status, response.sha256, fingerprint, is_head
+                response.status,
+                response.sha256,
+                fingerprint,
+                is_head,
+                truncated=response.truncated,
             )
-            severity = profile.severity if verdict == "expuesto" else "info"
+            severity = profile.severity if verdict in EXPOSED_VERDICTS else "info"
+            content_length = _parse_content_length(
+                response.headers.get("content-length", "")
+            )
 
             body_saved = ""
             if (
                 evidence_dir is not None
                 and not is_head
                 and (profile.stores_body or profile.path in extra_store)
-                and verdict == "expuesto"
+                and verdict in EXPOSED_VERDICTS
             ):
                 body_dir = evidence_dir / "bodies" / host
                 body_dir.mkdir(parents=True, exist_ok=True)
@@ -351,10 +416,12 @@ def probe(
                     severity=severity,
                     final_url=response.final_url,
                     body_saved=body_saved,
+                    content_length_header=content_length,
+                    truncated=response.truncated,
                 )
             )
             if verbose:
-                marker = "!!" if verdict == "expuesto" else "  "
+                marker = "!!" if verdict in EXPOSED_VERDICTS else "  "
                 print(
                     f"[probe] {marker} {host}{profile.path} → {response.status} "
                     f"{response.content_type or '-'} {len(response.body)}B "
@@ -576,13 +643,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             "total": len(results),
             "by_severity": by_severity,
             "by_verdict": by_verdict,
-            "exposed": sum(1 for r in results if r.verdict == "expuesto"),
+            "exposed": sum(1 for r in results if r.verdict in EXPOSED_VERDICTS),
+            "exposed_truncated": sum(
+                1 for r in results if r.verdict == "exposed_truncated"
+            ),
             "soft_404": sum(1 for r in results if r.soft_404),
         },
         "note": (
             "El cuerpo de las rutas sensibles no se guarda. Sólo se almacenan "
             "los cuerpos de las rutas seguras (robots.txt, sitemap.xml, "
-            "security.txt)."
+            "security.txt). 'length' son los bytes leídos (tope 'max_bytes'); "
+            "el tamaño real declarado por el servidor va en "
+            "'content_length_header' y 'truncated' indica lectura incompleta."
         ),
     }
 
@@ -614,7 +686,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 def _render_tsv(results: Sequence[ProbeResult]) -> str:
-    """Serializa los resultados en TSV."""
+    """Serializa los resultados en TSV.
+
+    ``length`` son los **bytes leídos**; ``content_length_header`` es el
+    tamaño declarado por el servidor y ``truncated`` dice si la lectura se
+    cortó por ``max_bytes``.
+    """
     lines = [TSV_HEADER]
     for result in results:
         lines.append(
@@ -625,8 +702,10 @@ def _render_tsv(results: Sequence[ProbeResult]) -> str:
                     str(result.code),
                     result.content_type or "-",
                     str(result.length),
+                    str(result.length_reported) if result.length_reported is not None else "-",
                     result.sha256[:12],
                     "si" if result.soft_404 else "no",
+                    "si" if result.truncated else "no",
                     result.verdict,
                     result.severity,
                 ]

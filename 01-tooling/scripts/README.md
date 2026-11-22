@@ -113,8 +113,18 @@ administración, documentación de API…) contra los hosts autorizados.
   Si la respuesta tiene el mismo cuerpo, se marca `soft_404` y **no cuenta como
   exposición**. Sin esto, cualquier sitio que devuelva la misma página de error
   para todo generaría cientos de falsos positivos.
-* Sale en **TSV** (`host path code content_type length sha256 soft_404 verdict
-  severity`), en `--json`, y deja el fichero de evidencia en `--out`.
+* Sale en **TSV** (`host path code content_type length content_length_header sha256
+  soft_404 truncated verdict severity`), en `--json`, y deja el fichero de
+  evidencia en `--out`.
+
+**`length` no es el tamaño del fichero.** `length` son los **bytes leídos**
+(tope `max_bytes`, 1 MB por defecto); una copia de seguridad de 48 MB aparece
+como `length=1000000` y su `sha256` es el del primer megabyte. El tamaño que
+**declara** el servidor va aparte en `content_length_header` (alias
+`length_reported`) y el booleano `truncated` dice si la lectura se cortó por el
+tope. Si además la ruta está expuesta, el veredicto pasa a
+`exposed_truncated`: el fichero es **mayor** de lo que se leyó, y el auditor
+tiene que saberlo antes de cerrar el hallazgo.
 
 ```bash
 python3 probe_exposure.py -a auth.json --host www.ejemplo.mx --out evidencia/
@@ -199,6 +209,13 @@ ninguna petición.
 Salida: informe **Markdown** con tabla `check | valor | severidad | remediación`
 (+ `--json`).
 
+Las **cabeceras núcleo** (las 9 que cualquier portal con datos de pacientes
+debería publicar) viven en el catálogo compartido `_common_headers.py`: lo
+importan **los dos** informes, así que con la misma evidencia
+`header_tls_report.py` y `attack_surface_report.py` dicen **exactamente** el
+mismo número de cabeceras núcleo ausentes (antes uno informaba de 9 y el otro
+puntuaba sobre 8, y el cliente veía la contradicción en el mismo informe).
+
 ```bash
 python3 header_tls_report.py evidencia/headers.txt --out evidencia/header_tls.md
 ```
@@ -218,6 +235,28 @@ Redacta PII de ficheros de texto/JSON/HTML:
 **El formato se preserva**: un JSON redactado sigue siendo JSON válido y
 parseable; el HTML sigue siendo HTML. El informe sólo contiene **conteos por
 categoría**, nunca valores.
+
+**Dos recuentos, no uno.** El informe distingue las **coincidencias
+detectadas** (`matches_by_category`) de las **redacciones aplicadas**
+(`counts_by_category`, que es lo que suma `total_redactions`): no son lo mismo.
+Un número de 16 dígitos que encaja con el patrón de tarjeta pero **no** pasa
+Luhn se detecta y **no** se redacta; con `--keep-ips` las IPs se detectan y no
+se tocan; una clave personal cuyo valor es un objeto se detecta y se conserva
+para no destruir el JSON. Un informe que sólo dijera «tarjeta: 2» daría a
+entender que se redactaron dos tarjetas.
+
+**Catálogo con alias.** La clave puede venir con más de una grafía y
+**todas** se redactan: `expediente` / `num_expediente` / `expediente_id`,
+`tarjeta` / `numero_tarjeta` / `num_tarjeta` / `card_number`,
+`grupo_sanguineo` / `grupo_sangre` / `tipo_sangre`, `fecha_nacimiento` /
+`fecha_nac` / `nacido_en` / `dob`, `telefono_emergencia` /
+`contacto_emergencia`, `sexo` / `genero`, `alergia` / `alergias`,
+`medicamento` / `medicamentos`, `seguro` / `poliza` / `numero_poliza` /
+`afiliado`, `paciente_id` / `id_paciente` / `record_id`, `cp` /
+`codigo_postal`, y las clínicas (`cie`, `cve`, `doctor`, `medico`,
+`especialidad`, `motivo_consulta`, `preexistencias`, `diagnostico`,
+`estado_civil`, `rh`). Si el JSON del cliente usa un nombre que no está en el
+catálogo, `--extra-key "clave"` lo añade.
 
 ```bash
 python3 pii_redact.py evidencia-cruda/ --out-dir evidencia-sanitizada --report informe.json

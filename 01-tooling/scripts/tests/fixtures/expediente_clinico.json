@@ -1,0 +1,50 @@
+{
+  "expediente": "EXP-2024-0042",
+  "expediente_id": "EXP-2024-0042",
+  "num_expediente": "0042",
+  "paciente_id": "PAC-000178",
+  "record_id": "REC-99120",
+  "id_paciente": "PAC-000178",
+  "nombre": "Ana Sofía Ramírez Cortés",
+  "apellido": "Ramírez Cortés",
+  "sexo": "F",
+  "genero": "F",
+  "estado_civil": "soltera",
+  "fecha_nac": "1985-11-02",
+  "grupo_sanguineo": "O+",
+  "grupo_sangre": "O+",
+  "tipo_sangre": "O+",
+  "rh": "+",
+  "contacto_emergencia": {
+    "nombre": "Luis Ramírez Soto",
+    "telefono_emergencia": "55 1122 3344"
+  },
+  "domicilio": {
+    "calle": "Avenida Reforma",
+    "numero": "222",
+    "colonia": "Juárez",
+    "municipio": "Benito Juárez",
+    "cp": "06600"
+  },
+  "alergia": "Penicilina",
+  "alergias": ["Penicilina"],
+  "preexistencias": ["Hipertensión arterial"],
+  "medicamentos": ["Losartán 50 mg"],
+  "diagnostico": "Hipertensión arterial",
+  "cie": "I10",
+  "cve": "I10",
+  "doctor": "Dra. Elena Vargas",
+  "medico": "Dra. Elena Vargas",
+  "especialidad": "Cardiología",
+  "motivo_consulta": "Control de presión arterial",
+  "seguro": "IMSS",
+  "poliza": "POL-2024-8871",
+  "numero_poliza": "POL-2024-8871",
+  "afiliado": "AF-11223344",
+  "pago": {
+    "tarjeta": "4111111111111111",
+    "numero_tarjeta": "4111111111111111",
+    "num_tarjeta": "4111111111111111",
+    "metodo": "tarjeta"
+  }
+}

@@ -474,17 +474,35 @@ class Redactor:
                     category = KEY_CATEGORY.get(
                         _normalise_key(key), "dato_personal_json"
                     )
-                    self._bump_match(category)
                     if self.keep_ips and self._is_ip_key(key):
+                        self._bump_match(category)
                         out[key] = self.redact_json(value)
                         continue
-                    # Los contenedores (objetos/listas) se recorren para no
-                    # destruir la estructura del documento; los escalares se
-                    # sustituyen por completo. Un contenedor es una coincidencia
-                    # detectada, pero no una redacción.
-                    if isinstance(value, (dict, list)):
+                    if isinstance(value, dict):
+                        # Un objeto se conserva (para no destruir la estructura
+                        # del documento) y se recorren sus claves: cada dato
+                        # personal dentro se redacta por su propia clave. La
+                        # clave es una coincidencia, no una redacción.
+                        self._bump_match(category)
                         out[key] = self.redact_json(value)
                         continue
+                    if isinstance(value, list):
+                        # Una lista de escalares no tiene claves internas que
+                        # redactar: si se conservara tal cual, los valores
+                        # clínicos (alergias, medicamentos) saldrían sin
+                        # redactar. Se sustituye cada elemento y se conserva
+                        # la forma de la lista.
+                        elementos: list[Any] = []
+                        for item in value:
+                            if isinstance(item, (dict, list)):
+                                elementos.append(self.redact_json(item))
+                                continue
+                            self._bump_match(category)
+                            self._bump_redaction(category)
+                            elementos.append(_PLACEHOLDER.format(category=category))
+                        out[key] = elementos
+                        continue
+                    self._bump_match(category)
                     self._bump_redaction(category)
                     out[key] = _PLACEHOLDER.format(category=category)
                     continue

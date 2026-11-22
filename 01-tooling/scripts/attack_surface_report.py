@@ -433,7 +433,9 @@ def build_report(
         for row in probe_rows:
             verdict = (row.get("verdict") or "").lower()
             severity = (row.get("severity") or "").lower()
-            if verdict != "expuesto":
+            # `exposed_truncated` también es una exposición: el fichero es
+            # mayor de lo que se leyó, no menos expuesto.
+            if verdict not in ("expuesto", "exposed_truncated"):
                 continue
             total += PATH_WEIGHT.get(severity, 0.0)
             exposed.append(f"{row.get('path', '?')} ({severity})")

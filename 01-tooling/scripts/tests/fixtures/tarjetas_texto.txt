@@ -1,0 +1,7 @@
+# FIXTURE: valores ficticios para la auto-prueba (no son datos reales).
+# El primer número pasa Luhn y además tiene contexto de tarjeta: se redacta.
+# El segundo tiene forma de tarjeta pero NO pasa Luhn: se detecta y se deja
+# intacto. Sirve para comprobar que el informe distingue coincidencias de
+# redacciones aplicadas.
+Tarjeta de prueba: 4111111111111111
+Folio interno: 1234567890123456
